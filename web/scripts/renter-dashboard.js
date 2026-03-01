@@ -77,68 +77,15 @@ function loadVehiclesFromStorage() {
         if (raw) {
             const parsed = JSON.parse(raw);
             if (Array.isArray(parsed) && parsed.length > 0) {
-                const parsedVehicles = parsed.map(normalizeVehicle);
-                // enrich with ownerId/ownerEmail when possible
-                mapVehicleOwners(parsedVehicles);
-                return parsedVehicles;
+                return parsed.map(normalizeVehicle);
             }
         }
     } catch (error) {
     }
 
     const seededVehicles = defaultVehicles.map(normalizeVehicle);
-    // try to map seeded vehicles to existing users (by name/email) so admin can find owner vehicles
-    mapVehicleOwners(seededVehicles);
     saveVehiclesToStorage(seededVehicles);
     return seededVehicles;
-}
-
-function mapVehicleOwners(vehicles){
-    try{
-        const rawUsers = localStorage.getItem('carRentalUsers');
-        const users = rawUsers ? JSON.parse(rawUsers) : [];
-        if(!Array.isArray(users) || users.length===0) return;
-
-        const emailMap = {};
-        const nameMap = {};
-        users.forEach(u=>{
-            const email = (u.email||'').toLowerCase();
-            if(email) emailMap[email] = u;
-            const full = (u.fullName || ((u.firstName||'') + ' ' + (u.lastName||'')).trim()).toLowerCase();
-            if(full) nameMap[full] = u;
-        });
-
-        vehicles.forEach(v=>{
-            if(!v) return;
-            if(v.ownerId) return; // already assigned
-            const ownerField = (v.owner || v.ownerName || '').toString().trim();
-            if(!ownerField) return;
-            const lower = ownerField.toLowerCase();
-
-            // exact email match
-            if(emailMap[lower]){
-                const u = emailMap[lower];
-                v.ownerId = u.id; v.ownerEmail = u.email; v.ownerName = u.fullName || `${u.firstName||''} ${u.lastName||''}`.trim();
-                return;
-            }
-
-            // exact full name match
-            if(nameMap[lower]){
-                const u = nameMap[lower];
-                v.ownerId = u.id; v.ownerEmail = u.email; v.ownerName = u.fullName || `${u.firstName||''} ${u.lastName||''}`.trim();
-                return;
-            }
-
-            // partial name match
-            for(const key in nameMap){
-                if(key.includes(lower) || lower.includes(key)){
-                    const u = nameMap[key];
-                    v.ownerId = u.id; v.ownerEmail = u.email; v.ownerName = u.fullName || `${u.firstName||''} ${u.lastName||''}`.trim();
-                    break;
-                }
-            }
-        });
-    }catch(e){}
 }
 
 function saveVehiclesToStorage(vehiclesToSave) {
@@ -169,6 +116,8 @@ function saveSavedCars(savedCars) {
 document.addEventListener('DOMContentLoaded', function() {
     let vehicles = [];
     let savedCars = loadSavedCars();
+    // track whether the dashboard is currently showing saved vehicles
+    let showingSaved = false;
 
     // DOM Elements
     const searchInput = document.getElementById('searchInput');
@@ -233,6 +182,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // My Rentals button
     const myRentalsBtn = document.getElementById('myRentalsBtn');
     if (myRentalsBtn) myRentalsBtn.addEventListener('click', openRenterHistoryModal);
+
+    // Saved card container (makes the whole card clickable)
+    const savedCard = document.getElementById('savedCardContainer');
+    if (savedCard) {
+        savedCard.addEventListener('click', viewSavedCars);
+    }
 
     // Close renter history buttons
     const closeRenterHistory = document.getElementById('closeRenterHistory');
@@ -368,6 +323,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function filterVehicles() {
+        // if the user begins filtering/searching, exit saved preview
+        if (showingSaved) {
+            showingSaved = false;
+            const savedCardElem = document.getElementById('savedCardContainer');
+            if (savedCardElem) savedCardElem.classList.remove('active');
+        }
         let filteredVehicles = vehicles.filter(vehicle => {
             // Search filter
             if (currentFilters.search) {
@@ -426,6 +387,33 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function viewSavedCars() {
+        if (!showingSaved) {
+            if (savedCars.length === 0) {
+                alert('You have no saved cars yet.');
+                return;
+            }
+
+            // Filter vehicles to only show saved ones
+            const savedVehiclesList = vehicles.filter(v => savedCars.includes(v.id));
+            renderVehicles(savedVehiclesList);
+            updateStats(savedVehiclesList);
+            
+            // Clear search and filters to show we're viewing saved cars
+            searchInput.value = '';
+            currentFilters.search = '';
+
+            showingSaved = true;
+            if (savedCard) savedCard.classList.add('active');
+        } else {
+            // toggle back to full list
+            renderVehicles(vehicles);
+            updateStats(vehicles);
+            showingSaved = false;
+            if (savedCard) savedCard.classList.remove('active');
+        }
+    }
+
     function renderVehicles(vehiclesToRender) {
         const visibleVehicles = vehiclesToRender.filter(vehicle => vehicle.available);
 
@@ -456,6 +444,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     card.setAttribute('status', vehicle.status);
                 }
                 card.setAttribute('mode', 'renter');
+                // Pass the saved state to the vehicle card
+                card.setAttribute('saved', savedCars.includes(vehicle.id) ? 'true' : 'false');
                 
                 card.addEventListener('vehicle-click', (e) => {
                     showVehicleDetail(e.detail.vehicleId);
@@ -632,6 +622,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('totalVehicles').textContent = totalVehicles;
         document.getElementById('availableVehicles').textContent = availableVehicles;
         document.getElementById('avgPrice').textContent = `₱${avgPrice}`;
+        document.getElementById('savedVehicles').textContent = savedCars.length;
     }
 
     // Global function for vehicle detail (called from onclick)
@@ -847,13 +838,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.saveCar = function(vehicleId) {
         if (savedCars.includes(vehicleId)) {
-            alert('This car is already saved.');
-            return;
+            // Unsave the car
+            savedCars = savedCars.filter(id => id !== vehicleId);
+            saveSavedCars(savedCars);
+            alert('Car removed from saved.');
+        } else {
+            // Save the car
+            savedCars = [...savedCars, vehicleId];
+            saveSavedCars(savedCars);
+            alert('Car saved successfully.');
         }
-
-        savedCars = [...savedCars, vehicleId];
-        saveSavedCars(savedCars);
-        alert('Car saved successfully.');
+        // Re-render vehicles to update the heart icons in real-time
+        filterVehicles();
+        // Close detail modal and reopen with updated state
+        closeDetailModal();
         showVehicleDetail(vehicleId);
     };
 

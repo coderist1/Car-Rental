@@ -9,33 +9,20 @@
 </head>
 <body>
     <div class="container">
-        <div class="admin-layout">
-            <aside class="sidebar" aria-label="Admin navigation">
-                <div class="sidebar-brand">CarRental</div>
-                <nav class="sidebar-nav">
-                    <a href="#" data-target="users-panel" class="active" onclick="navigateAdmin(event)">Users</a>
-                    <a href="#" data-target="vehicles-panel" onclick="navigateAdmin(event)">Vehicles</a>
-                    <a href="#" data-target="approvals-panel" onclick="navigateAdmin(event)">Approvals</a>
-                    <a href="#" data-target="rentals-panel" onclick="navigateAdmin(event)">Rentals</a>
-                    <a href="#" data-target="analytics-panel" onclick="navigateAdmin(event)">Analytics</a>
-                </nav>
-            </aside>
+        <header class="admin-header">
+            <div class="header-content admin-header-content">
+                <div class="admin-heading">
+                    <h1>Admin Dashboard</h1>
+                    <p class="admin-subtitle">Monitor users, vehicles, and rentals in one place.</p>
+                </div>
+                <div class="user-info">
+                    <span id="admin-welcome">Welcome, Admin</span>
+                    <profile-menu id="adminProfile"></profile-menu>
+                </div>
+            </div>
+        </header>
 
-            <main class="admin-main">
-                <header class="admin-header">
-                    <div class="header-content admin-header-content">
-                        <div class="admin-heading">
-                            <h1>Admin Dashboard</h1>
-                            <p class="admin-subtitle">Monitor users, vehicles, and rentals in one place.</p>
-                        </div>
-                        <div class="user-info">
-                            <span id="admin-welcome">Welcome, Admin</span>
-                            <profile-menu id="adminProfile"></profile-menu>
-                        </div>
-                    </div>
-                </header>
-
-                <section id="analytics-panel" class="admin-analytics" aria-label="Admin analytics overview">
+        <section class="admin-analytics" aria-label="Admin analytics overview">
             <article class="analytics-card">
                 <p class="analytics-label">Total Users</p>
                 <p class="analytics-value" id="analytics-users">0</p>
@@ -52,54 +39,28 @@
                 <p class="analytics-label">Estimated Daily Revenue</p>
                 <p class="analytics-value" id="analytics-revenue">₱0</p>
             </article>
-                </section>
+        </section>
 
-                <section class="admin-panels">
-                    <div id="users-panel" class="admin-panel">
-                        <h2 class="panel-title">Users</h2>
-                        <div id="admin-users">Loading users...</div>
-                        <div id="user-vehicles" style="display:none; position:relative;">
-                            <button class="uv-close" onclick="closeUserVehicles()" aria-label="Close owner vehicles">×</button>
-                            <h3 class="panel-subtitle">Owner's Vehicles</h3>
-                            <div id="user-vehicles-list">No owner selected</div>
-                        </div>
-                    </div>
+        <section class="admin-panels">
+            <div class="admin-panel">
+                <h2 class="panel-title">Users</h2>
+                <div id="admin-users">Loading users...</div>
+            </div>
 
-                    <div id="vehicles-panel" class="admin-panel">
-                        <h2 class="panel-title">Vehicles</h2>
-                        <div id="admin-vehicles">Loading vehicles...</div>
-                    </div>
+            <div class="admin-panel">
+                <h2 class="panel-title">Vehicles</h2>
+                <div id="admin-vehicles">Loading vehicles...</div>
+            </div>
 
-                    <div id="approvals-panel" class="admin-panel">
-                        <h2 class="panel-title">Approvals</h2>
-                        <h3 class="panel-subtitle">Owner Registrations</h3>
-                        <div id="owner-approvals">Loading owner approvals...</div>
-                        <h3 class="panel-subtitle">Vehicle Listings</h3>
-                        <div id="vehicle-approvals">Loading vehicle approvals...</div>
-                    </div>
-
-                    <div id="rentals-panel" class="admin-panel">
-                        <h2 class="panel-title">Rentals</h2>
-                        <div id="admin-rentals">Loading rentals...</div>
-                    </div>
-                </section>
-            </main>
-        </div>
+            <div class="admin-panel">
+                <h2 class="panel-title">Rentals</h2>
+                <div id="admin-rentals">Loading rentals...</div>
+            </div>
+        </section>
     </div>
 
     <script src="../components/profile-menu.js" defer></script>
     <script src="../components/vehicle-card.js" defer></script>
     <script src="../scripts/admin-dashboard.js" defer></script>
-    <script>
-        function navigateAdmin(e){
-            e.preventDefault();
-            const target = e.currentTarget.getAttribute('data-target');
-            if(!target) return;
-            const el = document.getElementById(target);
-            if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
-            document.querySelectorAll('.sidebar-nav a').forEach(a=>a.classList.remove('active'));
-            e.currentTarget.classList.add('active');
-        }
-    </script>
 </body>
 </html>

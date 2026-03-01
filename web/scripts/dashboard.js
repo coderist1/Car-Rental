@@ -41,57 +41,8 @@ const defaultVehicles = [
 let vehicles = [];
 
 let editingVehicleId = null;
-
-function getCurrentOwnerMeta() {
-    try {
-        const stored = localStorage.getItem('userProfile');
-        if (!stored) return null;
-        const user = JSON.parse(stored);
-        const ownerName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.fullName || 'Owner';
-        return {
-            ownerId: user.id ?? null,
-            ownerEmail: user.email || '',
-            ownerName,
-            owner: ownerName
-        };
-    } catch (e) {
-        return null;
-    }
-}
-
-function attachOwnerMeta(vehicle, ownerMeta) {
-    if (!ownerMeta || !vehicle) return vehicle;
-    return {
-        ...vehicle,
-        ownerId: ownerMeta.ownerId,
-        ownerEmail: ownerMeta.ownerEmail,
-        ownerName: ownerMeta.ownerName,
-        owner: ownerMeta.ownerName
-    };
-}
-
-function synchronizeCurrentOwnerVehicles() {
-    const ownerMeta = getCurrentOwnerMeta();
-    if (!ownerMeta) return;
-
-    let changed = false;
-    vehicles = vehicles.map(vehicle => {
-        const hasOwnerRef = !!(vehicle.ownerId || vehicle.ownerEmail || vehicle.ownerName || vehicle.owner);
-        const matchesCurrentOwner =
-            (vehicle.ownerId != null && String(vehicle.ownerId) === String(ownerMeta.ownerId)) ||
-            ((vehicle.ownerEmail || '').toLowerCase() === (ownerMeta.ownerEmail || '').toLowerCase()) ||
-            ((vehicle.ownerName || vehicle.owner || '').toLowerCase() === (ownerMeta.ownerName || '').toLowerCase());
-
-        if (matchesCurrentOwner || !hasOwnerRef) {
-            changed = true;
-            return attachOwnerMeta(vehicle, ownerMeta);
-        }
-
-        return vehicle;
-    });
-
-    if (changed) saveStoredVehicles();
-}
+let showingAvailable = false; // track if we are filtering to available cars
+let showingRented = false; // track if we are filtering to rented cars
 
 // Initialize the dashboard
 function initDashboard() {
@@ -100,19 +51,22 @@ function initDashboard() {
         vehicles = storedVehicles.map(normalizeVehicle);
     } else {
         vehicles = defaultVehicles.map(normalizeVehicle);
-        const ownerMeta = getCurrentOwnerMeta();
-        if (ownerMeta) {
-            vehicles = vehicles.map(v => attachOwnerMeta(v, ownerMeta));
-        }
         saveStoredVehicles();
     }
-
-    // Ensure vehicles visible to this owner are tagged with owner fields for admin sync.
-    synchronizeCurrentOwnerVehicles();
-
     updateStats();
     renderVehicles();
     setupSearch();
+
+    // make available stat card clickable
+    const availableCard = document.getElementById('availableCard');
+    if (availableCard) {
+        availableCard.addEventListener('click', viewAvailable);
+    }
+    // make rented stat card clickable
+    const rentedCard = document.getElementById('rentedCard');
+    if (rentedCard) {
+        rentedCard.addEventListener('click', viewRented);
+    }
     // Load owner profile into header and profile menu
     loadOwnerProfile();
     // Rental history initialization
@@ -347,11 +301,11 @@ function saveStoredVehicles() {
 }
 
 // Update statistics
-function updateStats() {
-    const total = vehicles.length;
-    const available = vehicles.filter(v => v.available).length;
+function updateStats(list = vehicles) {
+    const total = list.length;
+    const available = list.filter(v => v.available).length;
     const rented = total - available;
-    const estimatedDailyEarnings = vehicles
+    const estimatedDailyEarnings = list
         .filter(v => (v.status || (v.available ? 'available' : 'rented')) === 'rented')
         .reduce((sum, vehicle) => sum + Number(vehicle.pricePerDay || 0), 0);
 
@@ -477,6 +431,15 @@ function closeCarDetailModal(){
 function setupSearch() {
     const searchInput = document.getElementById('search-input');
     searchInput.addEventListener('input', function() {
+        // if user is typing, cancel available or rented filter view
+        if (showingAvailable || showingRented) {
+            showingAvailable = false;
+            showingRented = false;
+            const availableCard = document.getElementById('availableCard');
+            if (availableCard) availableCard.classList.remove('active');
+            const rentedCard = document.getElementById('rentedCard');
+            if (rentedCard) rentedCard.classList.remove('active');
+        }
         const query = this.value.toLowerCase();
         const filtered = vehicles.filter(vehicle =>
             vehicle.name.toLowerCase().includes(query) ||
@@ -484,6 +447,49 @@ function setupSearch() {
         );
         renderVehicles(filtered);
     });
+}
+
+function viewAvailable() {
+    const availableCard = document.getElementById('availableCard');
+    const rentedCard = document.getElementById('rentedCard');
+    if (!showingAvailable) {
+        const availList = vehicles.filter(v => v.available);
+        renderVehicles(availList);
+        updateStats(availList);
+        showingAvailable = true;
+        showingRented = false;
+        if (availableCard) availableCard.classList.add('active');
+        if (rentedCard) rentedCard.classList.remove('active');
+        // clear search field
+        const si = document.getElementById('search-input');
+        if (si) si.value = '';
+    } else {
+        renderVehicles();
+        updateStats();
+        showingAvailable = false;
+        if (availableCard) availableCard.classList.remove('active');
+    }
+}
+
+function viewRented() {
+    const rentedCard = document.getElementById('rentedCard');
+    const availableCard = document.getElementById('availableCard');
+    if (!showingRented) {
+        const rentList = vehicles.filter(v => !v.available);
+        renderVehicles(rentList);
+        updateStats(rentList);
+        showingRented = true;
+        showingAvailable = false;
+        if (rentedCard) rentedCard.classList.add('active');
+        if (availableCard) availableCard.classList.remove('active');
+        const si = document.getElementById('search-input');
+        if (si) si.value = '';
+    } else {
+        renderVehicles();
+        updateStats();
+        showingRented = false;
+        if (rentedCard) rentedCard.classList.remove('active');
+    }
 }
 
 // Modal functions
@@ -537,7 +543,6 @@ function closeModal() {
 }
 
 function saveVehicle() {
-    const ownerMeta = getCurrentOwnerMeta();
     const formData = {
         name: document.getElementById('vehicle-name').value,
         brand: document.getElementById('vehicle-brand').value,
@@ -557,11 +562,7 @@ function saveVehicle() {
         available: document.getElementById('vehicle-availability')
             ? document.getElementById('vehicle-availability').value === 'available'
             : true,
-        image: window._vehicleImageDataUrl || getVehicleImage(document.getElementById('vehicle-type').value),
-        ownerId: ownerMeta ? ownerMeta.ownerId : null,
-        ownerEmail: ownerMeta ? ownerMeta.ownerEmail : '',
-        ownerName: ownerMeta ? ownerMeta.ownerName : '',
-        owner: ownerMeta ? ownerMeta.ownerName : ''
+        image: window._vehicleImageDataUrl || getVehicleImage(document.getElementById('vehicle-type').value)
     };
 
     if (!formData.name || !formData.brand || !formData.pricePerDay || !formData.location || !formData.type || !formData.transmission || !formData.fuel || !formData.plate) {
