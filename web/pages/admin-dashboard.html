@@ -18,6 +18,7 @@
                     <a href="#" data-target="approvals-panel" onclick="navigateAdmin(event)">Approvals</a>
                     <a href="#" data-target="rentals-panel" onclick="navigateAdmin(event)">Rentals</a>
                     <a href="#" data-target="disputes-panel" onclick="navigateAdmin(event)">Disputes</a>
+                    <a href="#" data-target="logs-panel" onclick="navigateAdmin(event)">Audit Log</a>
                     <a href="#" data-target="analytics-panel" onclick="navigateAdmin(event)">Analytics</a>
                 </nav>
             </aside>
@@ -83,6 +84,10 @@
                         <h2 class="panel-title">Disputes</h2>
                         <div id="admin-disputes">Loading disputes...</div>
                     </div>
+                    <div id="logs-panel" class="admin-panel">
+                        <h2 class="panel-title">Audit Log</h2>
+                        <div id="admin-logs">Loading logs...</div>
+                    </div>
                 </section>
             </main>
         </div>
@@ -102,6 +107,7 @@
     </div>
 
     <script src="../components/profile-menu.js" defer></script>
+    <script src="../scripts/audit.js" defer></script>
     <!-- vehicle-card component not needed in admin dashboard -->
     <script src="../scripts/admin-dashboard.js" defer></script>
 </body>

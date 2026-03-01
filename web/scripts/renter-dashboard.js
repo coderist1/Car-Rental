@@ -550,10 +550,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Return already requested.');
                 return;
             }
+            
+            // Get current renter info
+            const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+            const renterName = `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim() || currentUserName || 'Unknown Renter';
+            
             rec.returnRequested = true;
             rec.returnRequestedAt = new Date().toISOString();
+            rec.returnRequestedBy = renterName;
             arr[idx] = rec;
             localStorage.setItem('rentalHistory', JSON.stringify(arr));
+            
+            // Enhanced logging with category and severity
+            try{ 
+                logAudit('requestReturn', `Return requested for "${rec.vehicleName}" by ${renterName}`, {
+                    category: 'return_request',
+                    severity: 'info'
+                }); 
+            }catch(e){}
 
             // mark vehicle as pending return in owner vehicles storage
             try {
@@ -586,18 +600,41 @@ document.addEventListener('DOMContentLoaded', function() {
             const arr = raw ? JSON.parse(raw) : [];
             const idx = arr.findIndex(r => r.id === recordId);
             if (idx === -1) return;
+            
+            // Get current renter info
+            const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+            const renterName = `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim() || currentUserName || 'Unknown Renter';
+            const renterEmail = userProfile.email || currentUserEmail || 'unknown@email.com';
+            
             arr[idx].dispute = true;
             arr[idx].disputeReason = reason;
+            arr[idx].disputeFiledAt = new Date().toISOString();
+            arr[idx].disputeFiledBy = renterName;
+            arr[idx].disputeFiledByEmail = renterEmail;
+            arr[idx].disputeResolved = false;
+            arr[idx].disputeResolutionNotes = null;
+            arr[idx].disputeResolvedBy = null;
+            arr[idx].disputeResolvedAt = null;
+            
             localStorage.setItem('rentalHistory', JSON.stringify(arr));
+            
+            // Enhanced logging with metadata
+            try{ 
+                logAudit('requestDispute', `Dispute filed for "${arr[idx].vehicleName}" - ${reason}`, {
+                    category: 'dispute_management',
+                    severity: 'warning'
+                }); 
+            }catch(e){}
 
             // refresh UI
             loadRenterRentalHistory();
             renderRenterHistoryForUser();
             alert('Dispute submitted. Admin will review it.');
+            
             // log email to admin
             try {
                 const rec = arr[idx];
-                sendEmail('admin@carrental.local', 'New dispute filed', `Renter ${currentUserName || currentUserEmail} filed a dispute for ${rec.vehicleName||'a vehicle'}: ${reason}`);
+                sendEmail('admin@carrental.local', 'New dispute filed', `Renter ${renterName} (${renterEmail}) filed a dispute for ${rec.vehicleName||'a vehicle'}: ${reason}`);
             } catch(e){}
         } catch (e) {
             console.error('requestDispute failed', e);
