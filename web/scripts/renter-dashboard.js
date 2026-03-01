@@ -501,6 +501,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const ongoing = !item.endDate && item.status !== 'pending' && item.status !== 'rejected';
             const returnBtn = ongoing ? `<button class="btn btn-outline" onclick="requestReturn(${item.id})">Request Return</button>` : '';
+            const disputeBtn = `<button class="btn btn-danger" onclick="requestDispute(${item.id})">File Dispute</button>`;
             
             let statusText = '';
             if (item.status === 'pending') statusText = ' <span style="color:#d97706;font-size:12px;font-weight:600">(Pending Approval)</span>';
@@ -517,7 +518,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div style="color:#444;font-size:13px;margin-top:4px">
                         📅 ${start} → ${endDisplay}
                     </div>
-                    <div style="margin-top:10px">${returnBtn}</div>
+                    <div style="margin-top:10px">${returnBtn}${disputeBtn}</div>
                 </div>
             `;
         }).join('');
@@ -571,6 +572,35 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Return requested. The owner will be notified.');
         } catch (e) {
             console.error('requestReturn failed', e);
+        }
+    };
+
+    // File a dispute on a rental record
+    window.requestDispute = function(recordId) {
+        const reason = prompt('Enter a brief reason for the dispute:');
+        if (!reason) {
+            return; // cancelled or empty
+        }
+        try {
+            const raw = localStorage.getItem('rentalHistory');
+            const arr = raw ? JSON.parse(raw) : [];
+            const idx = arr.findIndex(r => r.id === recordId);
+            if (idx === -1) return;
+            arr[idx].dispute = true;
+            arr[idx].disputeReason = reason;
+            localStorage.setItem('rentalHistory', JSON.stringify(arr));
+
+            // refresh UI
+            loadRenterRentalHistory();
+            renderRenterHistoryForUser();
+            alert('Dispute submitted. Admin will review it.');
+            // log email to admin
+            try {
+                const rec = arr[idx];
+                sendEmail('admin@carrental.local', 'New dispute filed', `Renter ${currentUserName || currentUserEmail} filed a dispute for ${rec.vehicleName||'a vehicle'}: ${reason}`);
+            } catch(e){}
+        } catch (e) {
+            console.error('requestDispute failed', e);
         }
     };
 

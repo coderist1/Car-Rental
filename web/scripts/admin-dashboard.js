@@ -14,6 +14,7 @@ function refreshAdminDashboard() {
     renderVehicles();
     renderApprovals();
     renderRentals();
+    renderDisputes();
     renderAnalytics();
 }
 
@@ -264,6 +265,20 @@ window.adminRejectBooking = function(recordId) {
     } catch(e){ console.error(e); }
 }
 
+window.adminResolveDispute = function(recordId) {
+    if(!confirm('Mark dispute as resolved?')) return;
+    try {
+        const rentals = getRentals();
+        const idx = rentals.findIndex(r=>r.id===recordId);
+        if(idx===-1) return;
+        rentals[idx].dispute = false;
+        delete rentals[idx].disputeReason;
+        saveRentals(rentals);
+        refreshAdminDashboard();
+        alert('Dispute resolved');
+    } catch(e){ console.error(e); }
+}
+
 
 function renderApprovals(){
     const container = document.getElementById('approvals-panel');
@@ -285,10 +300,32 @@ function renderApprovals(){
     container.innerHTML = `<h2 class="panel-title">Approvals</h2><div class="admin-list">${rows}</div>`;
 }
 
+function renderDisputes(){
+    const container = document.getElementById('admin-disputes');
+    const disputes = getRentals().filter(r=>r.dispute);
+    if(!container) return;
+    if(disputes.length===0){ container.innerHTML = '<div class="admin-empty">No disputes</div>'; return; }
+    const rows = disputes.map(r=>{
+        const status = r.status || 'N/A';
+        return `<div class="admin-row">
+            <div class="admin-row-main">
+                <strong class="admin-row-title">${r.vehicleName || 'Vehicle'}</strong>
+                <small class="admin-row-meta">Renter: ${r.renterName||'N/A'} • ${status}</small>
+                <div class="admin-row-meta">Issue: ${r.disputeReason||'Not specified'}</div>
+            </div>
+            <div class="admin-row-actions">
+                <button class="btn btn-primary" onclick="adminResolveDispute(${r.id})">Resolve</button>
+            </div>
+        </div>`;
+    }).join('');
+    container.innerHTML = `<div class="admin-list">${rows}</div>`;
+}
+
 function renderAnalytics() {
     const users = getUsers();
     const vehicles = getVehicles();
     const rentals = getRentals();
+    const disputes = rentals.filter(r=>r.dispute).length;
 
     const totalUsers = users.length;
     const activeVehicles = vehicles.filter(v => (v.status || '').toLowerCase() === 'available').length;
@@ -301,11 +338,12 @@ function renderAnalytics() {
     const vehiclesEl = document.getElementById('analytics-vehicles');
     const rentalsEl = document.getElementById('analytics-rentals');
     const revenueEl = document.getElementById('analytics-revenue');
+        const disputesEl = document.getElementById('analytics-disputes');
 
     if (usersEl) usersEl.textContent = String(totalUsers);
     if (vehiclesEl) vehiclesEl.textContent = String(activeVehicles);
     if (rentalsEl) rentalsEl.textContent = String(ongoingRentals);
-    if (revenueEl) revenueEl.textContent = `₱${dailyRevenue.toLocaleString()}`;
+    if (disputesEl) disputesEl.textContent = String(disputes);
 }
 
 // owner vehicles modal helpers

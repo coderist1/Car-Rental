@@ -17,6 +17,7 @@
                     <a href="#" data-target="vehicles-panel" onclick="navigateAdmin(event)">Vehicles</a>
                     <a href="#" data-target="approvals-panel" onclick="navigateAdmin(event)">Approvals</a>
                     <a href="#" data-target="rentals-panel" onclick="navigateAdmin(event)">Rentals</a>
+                    <a href="#" data-target="disputes-panel" onclick="navigateAdmin(event)">Disputes</a>
                     <a href="#" data-target="analytics-panel" onclick="navigateAdmin(event)">Analytics</a>
                 </nav>
             </aside>
@@ -49,6 +50,10 @@
                         <p class="analytics-value" id="analytics-rentals">0</p>
                     </article>
                     <article class="analytics-card">
+                        <p class="analytics-label">Open Disputes</p>
+                        <p class="analytics-value" id="analytics-disputes">0</p>
+                    </article>
+                    <article class="analytics-card">
                         <p class="analytics-label">Estimated Daily Revenue</p>
                         <p class="analytics-value" id="analytics-revenue">₱0</p>
                     </article>
@@ -73,6 +78,10 @@
                     <div id="rentals-panel" class="admin-panel">
                         <h2 class="panel-title">Rentals</h2>
                         <div id="admin-rentals">Loading rentals...</div>
+                    </div>
+                    <div id="disputes-panel" class="admin-panel">
+                        <h2 class="panel-title">Disputes</h2>
+                        <div id="admin-disputes">Loading disputes...</div>
                     </div>
                 </section>
             </main>
