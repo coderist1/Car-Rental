@@ -116,6 +116,8 @@ function saveSavedCars(savedCars) {
 document.addEventListener('DOMContentLoaded', function() {
     let vehicles = [];
     let savedCars = loadSavedCars();
+    // track whether the dashboard is currently showing saved vehicles
+    let showingSaved = false;
 
     // DOM Elements
     const searchInput = document.getElementById('searchInput');
@@ -181,22 +183,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const myRentalsBtn = document.getElementById('myRentalsBtn');
     if (myRentalsBtn) myRentalsBtn.addEventListener('click', openRenterHistoryModal);
 
-    // View Saved Cars button
-    const viewSavedBtn = document.getElementById('viewSavedBtn');
-    if (viewSavedBtn) viewSavedBtn.addEventListener('click', viewSavedCars);
+    // Saved card container (makes the whole card clickable)
+    const savedCard = document.getElementById('savedCardContainer');
+    if (savedCard) {
+        savedCard.addEventListener('click', viewSavedCars);
+    }
 
     // Close renter history buttons
     const closeRenterHistory = document.getElementById('closeRenterHistory');
     const closeRenterHistoryFooter = document.getElementById('closeRenterHistoryFooter');
     if (closeRenterHistory) closeRenterHistory.addEventListener('click', closeRenterHistoryModal);
     if (closeRenterHistoryFooter) closeRenterHistoryFooter.addEventListener('click', closeRenterHistoryModal);
-
-    // Saved Cars Modal buttons
-    const savedCarsModal = document.getElementById('saved-cars-modal');
-    const closeSavedCars = document.getElementById('closeSavedCars');
-    const closeSavedCarsFooter = document.getElementById('closeSavedCarsFooter');
-    if (closeSavedCars) closeSavedCars.addEventListener('click', closeSavedCarsModal);
-    if (closeSavedCarsFooter) closeSavedCarsFooter.addEventListener('click', closeSavedCarsModal);
 
     // Close modals when clicking outside
     window.addEventListener('click', function(event) {
@@ -205,9 +202,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (event.target === detailModal) {
             closeDetailModal();
-        }
-        if (event.target === savedCarsModal) {
-            closeSavedCarsModal();
         }
     });
 
@@ -329,6 +323,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function filterVehicles() {
+        // if the user begins filtering/searching, exit saved preview
+        if (showingSaved) {
+            showingSaved = false;
+            const savedCardElem = document.getElementById('savedCardContainer');
+            if (savedCardElem) savedCardElem.classList.remove('active');
+        }
         let filteredVehicles = vehicles.filter(vehicle => {
             // Search filter
             if (currentFilters.search) {
@@ -388,63 +388,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function viewSavedCars() {
-        openSavedCarsModal();
-    }
-
-    function openSavedCarsModal() {
-        const modal = document.getElementById('saved-cars-modal');
-        if (!modal) return;
-
-        const listContainer = document.getElementById('saved-cars-list');
-        const emptyContainer = document.getElementById('saved-cars-empty');
-
-        if (savedCars.length === 0) {
-            listContainer.innerHTML = '';
-            emptyContainer.style.display = 'block';
-        } else {
-            emptyContainer.style.display = 'none';
-            const savedVehiclesList = vehicles.filter(v => savedCars.includes(v.id));
-            
-            // Render saved cars as a grid of cards
-            listContainer.innerHTML = '';
-            if (savedVehiclesList.length === 0) {
-                emptyContainer.style.display = 'block';
+        if (!showingSaved) {
+            if (savedCars.length === 0) {
+                alert('You have no saved cars yet.');
                 return;
             }
 
-            customElements.whenDefined('vehicle-card').then(() => {
-                savedVehiclesList.forEach(vehicle => {
-                    const card = document.createElement('vehicle-card');
-                    card.setAttribute('vehicle-id', vehicle.id);
-                    card.setAttribute('name', vehicle.name);
-                    card.setAttribute('type', vehicle.type);
-                    card.setAttribute('price', vehicle.price);
-                    card.setAttribute('image', vehicle.imageUri || 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=800&q=80');
-                    card.setAttribute('seats', vehicle.seats);
-                    card.setAttribute('transmission', vehicle.transmission);
-                    if (vehicle.status) {
-                        card.setAttribute('status', vehicle.status);
-                    }
-                    card.setAttribute('mode', 'renter');
-                    
-                    card.addEventListener('vehicle-click', (e) => {
-                        showVehicleDetail(e.detail.vehicleId);
-                    });
-                    
-                    listContainer.appendChild(card);
-                });
-            });
-        }
+            // Filter vehicles to only show saved ones
+            const savedVehiclesList = vehicles.filter(v => savedCars.includes(v.id));
+            renderVehicles(savedVehiclesList);
+            updateStats(savedVehiclesList);
+            
+            // Clear search and filters to show we're viewing saved cars
+            searchInput.value = '';
+            currentFilters.search = '';
 
-        modal.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeSavedCarsModal() {
-        const modal = document.getElementById('saved-cars-modal');
-        if (modal) {
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
+            showingSaved = true;
+            if (savedCard) savedCard.classList.add('active');
+        } else {
+            // toggle back to full list
+            renderVehicles(vehicles);
+            updateStats(vehicles);
+            showingSaved = false;
+            if (savedCard) savedCard.classList.remove('active');
         }
     }
 
