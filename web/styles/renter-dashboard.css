@@ -112,6 +112,7 @@ body {
     box-shadow: var(--shadow-soft);
     border: 1px solid rgba(148, 163, 184, 0.35);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    position: relative; /* allow absolute children like status text */
 }
 
 .search-input-container:focus-within {
@@ -132,6 +133,14 @@ body {
     outline: none;
     color: var(--ink);
     font-size: 15px;
+}
+
+.search-status {
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: none;
+    margin-top: 4px;
+    text-align: right;
 }
 
 .search-input::placeholder {

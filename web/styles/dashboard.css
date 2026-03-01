@@ -229,9 +229,17 @@ h1 {
     color: #3F9B84;
 }
 
-.status-rented {
-    background: rgba(255, 107, 107, 0.1);
-    color: #ff6b6b;
+/* make stat cards clickable */
+.stat-card.clickable {
+    cursor: pointer;
+}
+.stat-card.clickable:hover {
+    background-color: #f8fafc;
+}
+.stat-card.clickable.active {
+    border-color: #3F9B84;
+    background-color: #f8fafc;
+}
 }
 
 .vehicle-actions {

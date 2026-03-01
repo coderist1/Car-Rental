@@ -114,6 +114,7 @@ function saveSavedCars(savedCars) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('renter-dashboard script loaded');
     let vehicles = [];
     let savedCars = loadSavedCars();
     // track whether the dashboard is currently showing saved vehicles
@@ -147,6 +148,8 @@ document.addEventListener('DOMContentLoaded', function() {
         minPrice: '',
         maxPrice: ''
     };
+    let searchTimeout = null;
+    const searchStatus = document.getElementById('searchStatus');
 
     // Initialize with stored vehicles
     vehicles = loadVehiclesFromStorage();
@@ -255,8 +258,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== Search Functionality =====
     function handleSearch() {
+        console.log('search input changed:', searchInput.value);
+        // show searching indicator and debounce actual filtering
+        const statusEl = document.getElementById('searchStatus');
+        if (statusEl) {
+            statusEl.style.display = 'block';
+        }
+        clearTimeout(searchTimeout);
         currentFilters.search = searchInput.value.toLowerCase();
-        filterVehicles();
+        searchTimeout = setTimeout(() => {
+            filterVehicles();
+            if (statusEl) {
+                statusEl.style.display = 'none';
+            }
+        }, 500);
     }
 
     // ===== Filter Modal Functions =====

@@ -41,6 +41,7 @@ const defaultVehicles = [
 let vehicles = [];
 
 let editingVehicleId = null;
+let showingAvailable = false; // track if we are filtering to available cars
 
 // Initialize the dashboard
 function initDashboard() {
@@ -54,6 +55,12 @@ function initDashboard() {
     updateStats();
     renderVehicles();
     setupSearch();
+
+    // make available stat card clickable
+    const availableCard = document.getElementById('availableCard');
+    if (availableCard) {
+        availableCard.addEventListener('click', viewAvailable);
+    }
     // Load owner profile into header and profile menu
     loadOwnerProfile();
     // Rental history initialization
@@ -288,11 +295,11 @@ function saveStoredVehicles() {
 }
 
 // Update statistics
-function updateStats() {
-    const total = vehicles.length;
-    const available = vehicles.filter(v => v.available).length;
+function updateStats(list = vehicles) {
+    const total = list.length;
+    const available = list.filter(v => v.available).length;
     const rented = total - available;
-    const estimatedDailyEarnings = vehicles
+    const estimatedDailyEarnings = list
         .filter(v => (v.status || (v.available ? 'available' : 'rented')) === 'rented')
         .reduce((sum, vehicle) => sum + Number(vehicle.pricePerDay || 0), 0);
 
@@ -418,6 +425,12 @@ function closeCarDetailModal(){
 function setupSearch() {
     const searchInput = document.getElementById('search-input');
     searchInput.addEventListener('input', function() {
+        // if user is typing, cancel available filter view
+        if (showingAvailable) {
+            showingAvailable = false;
+            const availableCard = document.getElementById('availableCard');
+            if (availableCard) availableCard.classList.remove('active');
+        }
         const query = this.value.toLowerCase();
         const filtered = vehicles.filter(vehicle =>
             vehicle.name.toLowerCase().includes(query) ||
@@ -425,6 +438,25 @@ function setupSearch() {
         );
         renderVehicles(filtered);
     });
+}
+
+function viewAvailable() {
+    const availableCard = document.getElementById('availableCard');
+    if (!showingAvailable) {
+        const availList = vehicles.filter(v => v.available);
+        renderVehicles(availList);
+        updateStats(availList);
+        showingAvailable = true;
+        if (availableCard) availableCard.classList.add('active');
+        // clear search field
+        const si = document.getElementById('search-input');
+        if (si) si.value = '';
+    } else {
+        renderVehicles();
+        updateStats();
+        showingAvailable = false;
+        if (availableCard) availableCard.classList.remove('active');
+    }
 }
 
 // Modal functions
