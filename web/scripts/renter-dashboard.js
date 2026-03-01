@@ -444,6 +444,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     card.setAttribute('status', vehicle.status);
                 }
                 card.setAttribute('mode', 'renter');
+                // Pass the saved state to the vehicle card
+                card.setAttribute('saved', savedCars.includes(vehicle.id) ? 'true' : 'false');
                 
                 card.addEventListener('vehicle-click', (e) => {
                     showVehicleDetail(e.detail.vehicleId);
@@ -836,14 +838,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.saveCar = function(vehicleId) {
         if (savedCars.includes(vehicleId)) {
-            alert('This car is already saved.');
-            return;
+            // Unsave the car
+            savedCars = savedCars.filter(id => id !== vehicleId);
+            saveSavedCars(savedCars);
+            alert('Car removed from saved.');
+        } else {
+            // Save the car
+            savedCars = [...savedCars, vehicleId];
+            saveSavedCars(savedCars);
+            alert('Car saved successfully.');
         }
-
-        savedCars = [...savedCars, vehicleId];
-        saveSavedCars(savedCars);
-        alert('Car saved successfully.');
-        updateStats(vehicles); // Update the saved count in the stats
+        // Re-render vehicles to update the heart icons in real-time
+        filterVehicles();
+        // Close detail modal and reopen with updated state
+        closeDetailModal();
         showVehicleDetail(vehicleId);
     };
 

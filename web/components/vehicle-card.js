@@ -11,7 +11,7 @@ class VehicleCard extends HTMLElement {
     }
 
     static get observedAttributes() {
-        return ['name', 'type', 'price', 'image', 'location', 'seats', 'transmission', 'mode', 'status'];
+        return ['name', 'type', 'price', 'image', 'location', 'seats', 'transmission', 'mode', 'status', 'saved'];
     }
 
     attributeChangedCallback() {
@@ -30,6 +30,7 @@ class VehicleCard extends HTMLElement {
         const mode = this.getAttribute('mode') || 'renter'; // 'renter' or 'owner'
         const status = this.getAttribute('status') || '';
         const vehicleId = this.getAttribute('vehicle-id') || '';
+        const saved = this.getAttribute('saved') === 'true';
 
         this.shadowRoot.innerHTML = `
             <style>
@@ -67,6 +68,26 @@ class VehicleCard extends HTMLElement {
                     background: #f8f9fa;
                     padding: 1px;
                     display: inherit;
+                    position: relative;
+                }
+
+                :host([mode="renter"]) .vehicle-image-container {
+                    position: relative;
+                }
+
+                .saved-indicator {
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    background: rgba(255, 255, 255, 0.95);
+                    border-radius: 50%;
+                    width: 36px;
+                    height: 36px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 20px;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
                 }
 
                 :host([mode="renter"]) .vehicle-image {
@@ -251,12 +272,15 @@ class VehicleCard extends HTMLElement {
                 }
             </style>
             <div class="vehicle-card">
-                <img 
-                    src="${image}" 
-                    alt="${name}" 
-                    class="vehicle-image"
-                    onerror="this.src='https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=800&q=80'"
-                />
+                <div style="position: relative;">
+                    <img 
+                        src="${image}" 
+                        alt="${name}" 
+                        class="vehicle-image"
+                        onerror="this.src='https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=800&q=80'"
+                    />
+                    ${saved ? '<div class="saved-indicator">❤️</div>' : ''}
+                </div>
                 <div class="vehicle-info">
                     <div class="vehicle-name">${name}</div>
                     <div class="vehicle-type">${type}</div>
