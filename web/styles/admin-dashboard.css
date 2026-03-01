@@ -197,6 +197,74 @@
     }
 }
 
+/* owner vehicles modal styles (modern cards) */
+.owner-vehicle-list {
+    padding: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+}
+.owner-vehicle-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.owner-vehicle-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+}
+.owner-vehicle-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+.owner-vehicle-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+}
+.owner-vehicle-plate {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+.owner-vehicle-status {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #10b981;
+    text-transform: capitalize;
+}
+.owner-vehicle-status.rented {
+    color: #ef4444;
+}
+/* modal backdrop softer and header cleaner */
+#owner-vehicles-modal .modal-content {
+    max-width: 800px;
+    width: 90%;
+}
+#owner-vehicles-modal .modal-header {
+    padding: 20px;
+    border-bottom: none;
+}
+#owner-vehicles-modal .modal-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+#owner-vehicles-modal .close {
+    font-size: 1.75rem;
+    color: #374151;
+}
+#owner-vehicles-modal {
+    backdrop-filter: blur(4px);
+    background: rgba(0,0,0,0.4);
+}
+
 /* sidebar layout */
 .admin-layout {
     display: flex;

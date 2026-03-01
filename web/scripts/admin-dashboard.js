@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function refreshAdminDashboard() {
     renderUsers();
-    renderVehicles();
+    // vehicles removed
     renderRentals();
     renderAnalytics();
 }
@@ -36,6 +36,14 @@ function getUsers() {
     } catch (e) { return []; }
 }
 
+// vehicles are still stored in ownerVehicles even though admin doesn't manage them directly
+function getAllVehicles() {
+    try {
+        const raw = localStorage.getItem('ownerVehicles');
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) { return []; }
+}
+
 function saveUsers(users) {
     try { localStorage.setItem('carRentalUsers', JSON.stringify(users)); } catch(e){}
 }
@@ -54,6 +62,7 @@ function renderUsers(){
                 <small class="admin-row-meta">${u.email || '-'} • ${u.role || 'user'} • ${active}</small>
             </div>
             <div class="admin-row-actions">
+                <button class="btn btn-secondary" onclick="adminShowVehicles(${u.id})">Show Vehicles</button>
                 <button class="btn btn-outline" onclick="adminToggleUser(${u.id})">${u.active === false ? 'Activate' : 'Deactivate'}</button>
                 <button class="btn btn-danger" onclick="adminDeleteUser(${u.id})">Delete</button>
             </div>
@@ -85,41 +94,27 @@ window.adminDeleteUser = function(userId){
     }catch(e){console.error(e)}
 }
 
-function getVehicles(){
-    try{ const raw = localStorage.getItem('ownerVehicles'); return raw? JSON.parse(raw): []; }catch(e){return []}
+// show vehicles owned by a given user (matched by full name)
+window.adminShowVehicles = function(userId) {
+    const users = getUsers();
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+    if (user.role !== 'owner') {
+        openOwnerVehiclesModal(user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim(), [], { message: 'This user is not registered as an owner.' });
+        return;
+    }
+    const name = user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    const all = getAllVehicles();
+    const owned = all.filter(v => {
+        if (v.ownerEmail && user.email && v.ownerEmail.toLowerCase() === user.email.toLowerCase()) {
+            return true;
+        }
+        return (v.owner || '').toLowerCase() === name.toLowerCase();
+    });
+    openOwnerVehiclesModal(name, owned);
 }
 
-function saveVehicles(v){ try{ localStorage.setItem('ownerVehicles', JSON.stringify(v)); }catch(e){} }
-
-function renderVehicles(){
-    const container = document.getElementById('admin-vehicles');
-    const vehicles = getVehicles();
-    if(!container) return;
-    if(vehicles.length===0){ container.innerHTML = '<div class="admin-empty">No vehicles</div>'; return; }
-    const rows = vehicles.map(v=>{
-        return `<div class="admin-row">
-            <div class="admin-row-main">
-                <strong class="admin-row-title">${v.brand || ''} ${v.name || ''}</strong>
-                <small class="admin-row-meta">${v.plate || '-'} • ${v.location || '-'} • ${v.status || 'unknown'}</small>
-            </div>
-            <div class="admin-row-actions">
-                <button class="btn btn-outline" onclick="adminDeleteVehicle(${v.id})">Delete</button>
-            </div>
-        </div>`;
-    }).join('');
-    container.innerHTML = `<div class="admin-list">${rows}</div>`;
-}
-
-window.adminDeleteVehicle = function(id){
-    if(!confirm('Delete vehicle?')) return;
-    try{
-        let v = getVehicles();
-        v = v.filter(x=>x.id!==id);
-        saveVehicles(v);
-        refreshAdminDashboard();
-        alert('Vehicle deleted');
-    }catch(e){console.error(e)}
-}
+// vehicle management removed from admin dashboard
 
 function getRentals(){
     try{ const raw = localStorage.getItem('rentalHistory'); return raw? JSON.parse(raw): []; }catch(e){return []}
@@ -159,11 +154,6 @@ window.adminForceComplete = function(recordId){
         rentals[idx].returnAccepted = true;
         saveRentals(rentals);
 
-        // update vehicle availability if present
-        const vehicles = getVehicles();
-        const vid = rentals[idx].vehicleId;
-        const vIdx = vehicles.findIndex(v=>v.id===vid);
-        if(vIdx!==-1){ vehicles[vIdx].status = 'available'; vehicles[vIdx].available = true; saveVehicles(vehicles); }
 
         refreshAdminDashboard();
         alert('Rental marked completed');
@@ -172,26 +162,67 @@ window.adminForceComplete = function(recordId){
 
 function renderAnalytics() {
     const users = getUsers();
-    const vehicles = getVehicles();
     const rentals = getRentals();
 
     const totalUsers = users.length;
-    const activeVehicles = vehicles.filter(v => (v.status || '').toLowerCase() === 'available').length;
     const ongoingRentals = rentals.filter(r => !r.endDate).length;
     const dailyRevenue = rentals
         .filter(r => !r.endDate)
         .reduce((sum, rental) => sum + Number(rental.amount || 0), 0);
 
     const usersEl = document.getElementById('analytics-users');
-    const vehiclesEl = document.getElementById('analytics-vehicles');
     const rentalsEl = document.getElementById('analytics-rentals');
     const revenueEl = document.getElementById('analytics-revenue');
 
     if (usersEl) usersEl.textContent = String(totalUsers);
-    if (vehiclesEl) vehiclesEl.textContent = String(activeVehicles);
     if (rentalsEl) rentalsEl.textContent = String(ongoingRentals);
     if (revenueEl) revenueEl.textContent = `₱${dailyRevenue.toLocaleString()}`;
 }
+
+// owner vehicles modal helpers
+function openOwnerVehiclesModal(ownerName, vehicles, opts = {}) {
+    const modal = document.getElementById('owner-vehicles-modal');
+    const nameEl = document.getElementById('modal-owner-name');
+    const listEl = document.getElementById('modal-vehicle-list');
+    if (nameEl) nameEl.textContent = ownerName || '';
+    if (listEl) {
+        if (opts.message) {
+            listEl.innerHTML = `<p>${opts.message}</p>`;
+        } else if (!vehicles || vehicles.length === 0) {
+            listEl.innerHTML = '<p>No vehicles to display.</p>';
+        } else {
+            listEl.innerHTML = vehicles.map(v => {
+                const label = `${v.brand||''} ${v.name||''}`.trim();
+                const plate = v.plate || '-';
+                const status = v.status || (v.available ? 'available' : 'rented');
+                const statusClass = (status || '').toLowerCase();
+                return `
+                    <div class="owner-vehicle-card">
+                        <div class="owner-vehicle-info">
+                            <span class="owner-vehicle-name">${label || 'Unnamed'}</span>
+                            <span class="owner-vehicle-plate">${plate}</span>
+                        </div>
+                        <span class="owner-vehicle-status ${statusClass}">${status}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+    }
+    if (modal) modal.style.display = 'block';
+}
+
+function closeOwnerVehiclesModal() {
+    const modal = document.getElementById('owner-vehicles-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+// close modal when clicking outside
+window.addEventListener('click', (e) => {
+    const modal = document.getElementById('owner-vehicles-modal');
+    if (modal && e.target === modal) {
+        closeOwnerVehiclesModal();
+    }
+});
 
 // navigation helper (mirrors inline script)
 function navigateAdmin(e) {

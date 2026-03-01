@@ -44,6 +44,13 @@ let editingVehicleId = null;
 let showingAvailable = false; // track if we are filtering to available cars
 let showingRented = false; // track if we are filtering to rented cars
 
+// current owner profile (name/email) for tagging vehicles
+let currentOwnerProfile = { name: 'Owner', email: '' };
+
+function getCurrentOwnerProfile() {
+    return currentOwnerProfile;
+}
+
 // Initialize the dashboard
 function initDashboard() {
     const storedVehicles = loadStoredVehicles();
@@ -277,7 +284,9 @@ function normalizeVehicle(vehicle) {
     return {
         ...vehicle,
         status,
-        available: status === 'available'
+        available: status === 'available',
+        owner: vehicle.owner || '',
+        ownerEmail: vehicle.ownerEmail || ''
     };
 }
 
@@ -319,15 +328,19 @@ function updateStats(list = vehicles) {
 // Load owner profile from storage and update header/menu
 function loadOwnerProfile() {
     let name = 'Owner';
+    let email = '';
     try {
         const stored = localStorage.getItem('userProfile');
         if (stored) {
             const u = JSON.parse(stored);
             name = `${u.firstName || ''} ${u.lastName || ''}`.trim() || name;
+            email = u.email || '';
         }
     } catch (e) {
         // ignore parse errors
     }
+
+    currentOwnerProfile = { name, email };
 
     const welcomeEl = document.getElementById('owner-welcome');
     if (welcomeEl) welcomeEl.textContent = `Welcome, ${name}`;
@@ -543,6 +556,7 @@ function closeModal() {
 }
 
 function saveVehicle() {
+    // gather form fields
     const formData = {
         name: document.getElementById('vehicle-name').value,
         brand: document.getElementById('vehicle-brand').value,
@@ -565,6 +579,11 @@ function saveVehicle() {
         image: window._vehicleImageDataUrl || getVehicleImage(document.getElementById('vehicle-type').value)
     };
 
+    // tag with current owner information so admin can later look up
+    const ownerProfile = getCurrentOwnerProfile();
+    if (ownerProfile.name) formData.owner = ownerProfile.name;
+    if (ownerProfile.email) formData.ownerEmail = ownerProfile.email;
+
     if (!formData.name || !formData.brand || !formData.pricePerDay || !formData.location || !formData.type || !formData.transmission || !formData.fuel || !formData.plate) {
         alert('Please fill in all required fields (marked with *)');
         return;
@@ -579,6 +598,9 @@ function saveVehicle() {
             const index = vehicles.findIndex(v => v.id === editingVehicleId);
             if (index === -1) return;
             const prevStatus = vehicles[index].status || (vehicles[index].available ? 'available' : 'rented');
+            // make sure owner info persists (do not overwrite if blank)
+            if (!formData.owner) formData.owner = vehicles[index].owner;
+            if (!formData.ownerEmail) formData.ownerEmail = vehicles[index].ownerEmail;
             vehicles[index] = { ...vehicles[index], ...formData };
 
             // If status changed to rented, add history record

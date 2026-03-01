@@ -14,7 +14,7 @@
                 <div class="sidebar-brand">CarRental</div>
                 <nav class="sidebar-nav">
                     <a href="#" data-target="users-panel" class="active" onclick="navigateAdmin(event)">Users</a>
-                    <a href="#" data-target="vehicles-panel" onclick="navigateAdmin(event)">Vehicles</a>
+                    <!-- Vehicles section removed -->
                     <a href="#" data-target="approvals-panel" onclick="navigateAdmin(event)">Approvals</a>
                     <a href="#" data-target="rentals-panel" onclick="navigateAdmin(event)">Rentals</a>
                     <a href="#" data-target="analytics-panel" onclick="navigateAdmin(event)">Analytics</a>
@@ -40,10 +40,7 @@
                         <p class="analytics-label">Total Users</p>
                         <p class="analytics-value" id="analytics-users">0</p>
                     </article>
-                    <article class="analytics-card">
-                        <p class="analytics-label">Active Vehicles</p>
-                        <p class="analytics-value" id="analytics-vehicles">0</p>
-                    </article>
+                    <!-- Active Vehicles analytics removed -->
                     <article class="analytics-card">
                         <p class="analytics-label">Ongoing Rentals</p>
                         <p class="analytics-value" id="analytics-rentals">0</p>
@@ -60,10 +57,7 @@
                         <div id="admin-users">Loading users...</div>
                     </div>
 
-                    <div id="vehicles-panel" class="admin-panel">
-                        <h2 class="panel-title">Vehicles</h2>
-                        <div id="admin-vehicles">Loading vehicles...</div>
-                    </div>
+                    <!-- Vehicles panel removed -->
 
                     <div id="approvals-panel" class="admin-panel">
                         <h2 class="panel-title">Approvals</h2>
@@ -79,8 +73,21 @@
         </div>
     </div>
 
+    <!-- Owner vehicles modal -->
+    <div id="owner-vehicles-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">Vehicles for <span id="modal-owner-name"></span></span>
+                <span class="close" onclick="closeOwnerVehiclesModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="modal-vehicle-list"></div>
+            </div>
+        </div>
+    </div>
+
     <script src="../components/profile-menu.js" defer></script>
-    <script src="../components/vehicle-card.js" defer></script>
+    <!-- vehicle-card component not needed in admin dashboard -->
     <script src="../scripts/admin-dashboard.js" defer></script>
 </body>
 </html>
