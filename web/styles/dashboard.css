@@ -479,3 +479,224 @@ h1 {
     .car-detail-modal .image-panel{order:2;max-height:360px}
     .car-detail-modal .detail-panel{order:1}
 }
+
+/* ════════════════════════════════════════════════════════════
+   damage-report-v2-additions.css
+   ADD these rules to your existing  styles/damage-report.css
+   (paste at the bottom of that file)
+════════════════════════════════════════════════════════════ */
+
+/* ── Trip group wrapper in list ────────────────────────────── */
+.dmg-trip-group {
+    margin-bottom: 14px;
+}
+
+/* ── Indented check-out row ────────────────────────────────── */
+.dmg-row-indented {
+    margin-left: 24px;
+    margin-top: -4px;
+    border-top-left-radius: 0;
+    border-left: 3px solid #3F9B84;
+}
+
+/* ── Linked / unlinked status badges ───────────────────────── */
+.dmg-linked-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(63, 155, 132, 0.12);
+    color: #3F9B84;
+    border: 1px solid rgba(63, 155, 132, 0.3);
+    letter-spacing: .03em;
+}
+
+.dmg-unlinked-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(245, 158, 11, 0.1);
+    color: #b45309;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    letter-spacing: .03em;
+}
+
+/* ── Linked check-in banner inside form ─────────────────────── */
+.dmg-linked-banner {
+    display: none;
+    background: rgba(63, 155, 132, 0.08);
+    border: 1px solid rgba(63, 155, 132, 0.3);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #374151;
+    margin-bottom: 14px;
+    line-height: 1.5;
+}
+
+/* ── Awaiting checkout notice in view ───────────────────────── */
+.dmg-awaiting-co {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px dashed rgba(245, 158, 11, 0.5);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #92400e;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+/* ── Custom checklist: remove button & add-other row ───────── */
+.dmg-check-remove {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity .12s;
+    flex-shrink: 0;
+}
+.dmg-check-remove:hover { opacity: 1; }
+
+.dmg-check-label {
+    flex: 1;
+    font-size: 13px;
+}
+
+.dmg-add-other-row {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.dmg-other-input {
+    flex: 1;
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+}
+
+.dmg-add-other-btn {
+    white-space: nowrap;
+    font-size: 13px !important;
+    padding: 8px 14px !important;
+    flex-shrink: 0;
+}
+
+/* ── Trip banner inside view modal ──────────────────────────── */
+.dmg-trip-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+    border: 1px solid rgba(63, 155, 132, 0.2);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a2c5e;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+/* ── Side-by-side comparison grid ───────────────────────────── */
+.dmg-compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    align-items: start;
+}
+
+.dmg-compare-col {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+
+.dmg-compare-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.dmg-compare-header--ci {
+    background: rgba(16, 185, 129, 0.08);
+    color: #065f46;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+}
+.dmg-compare-header--ci small { color: #6b7280; font-weight: 400; }
+
+.dmg-compare-header--co {
+    background: rgba(245, 158, 11, 0.08);
+    color: #92400e;
+    border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+}
+.dmg-compare-header--co small { color: #6b7280; font-weight: 400; }
+
+.dmg-compare-col .dmg-view-section {
+    padding: 12px 14px;
+    margin-bottom: 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+.dmg-compare-col .dmg-view-section:last-child { border-bottom: none; }
+
+.dmg-compare-col .dmg-view-section-title {
+    font-size: 11px;
+    margin-bottom: 8px;
+}
+
+/* ── NEW issue highlight in check-out ───────────────────────── */
+.dmg-issue-new {
+    background: rgba(239, 68, 68, 0.08) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+.dmg-dot--new {
+    background: #ef4444 !important;
+    width: 10px !important;
+    height: 10px !important;
+}
+
+.dmg-new-badge {
+    margin-left: auto;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    padding: 1px 6px;
+    background: #ef4444;
+    color: #fff;
+    border-radius: 999px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+/* ── "Add Check-out" button in footer ───────────────────────── */
+#dmg-view-add-checkout {
+    background: #3F9B84;
+    color: #fff;
+    display: none; /* shown by JS when applicable */
+    align-items: center;
+    gap: 6px;
+}
+#dmg-view-add-checkout:hover { background: #2d7a6a; }
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 620px) {
+    .dmg-compare-grid { grid-template-columns: 1fr; }
+    .dmg-trip-banner  { flex-direction: column; align-items: flex-start; }
+    .dmg-row-indented { margin-left: 10px; }
+}

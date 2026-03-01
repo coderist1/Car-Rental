@@ -1,0 +1,62 @@
+/* email-log.css - styles for email log page */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+    --font-family: 'DM Sans', sans-serif;
+    --bg: #fff;
+    --fg: #1a2c5e;
+    --muted: #6b7280;
+    --accent: #5b8af5;
+    --accent-dark: #1a2c5e;
+}
+
+body {
+    font-family: var(--font-family);
+    background: var(--bg);
+    color: var(--fg);
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    margin-top: 0;
+}
+
+.email-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.email-table th,
+.email-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.email-table th {
+    background: var(--accent);
+    color: white;
+}
+
+.email-log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-clear-log {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.btn-clear-log:hover {
+    background: #c0392b;
+}

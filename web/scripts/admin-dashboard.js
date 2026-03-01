@@ -11,7 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function refreshAdminDashboard() {
     renderUsers();
-    // vehicles removed
+    renderVehicles();
+    renderApprovals();
     renderRentals();
     renderAnalytics();
 }
@@ -53,22 +54,49 @@ function renderUsers(){
     const users = getUsers();
     if(!container) return;
     if(users.length===0){ container.innerHTML = '<div class="admin-empty">No users</div>'; return; }
-    const rows = users.map(u=>{
+
+    const owners = users.filter(u=>u.role==='owner');
+    const others = users.filter(u=>u.role!=='owner');
+
+    function userRow(u) {
         const name = u.fullName || `${u.firstName || ''} ${u.lastName || ''}`.trim();
         const active = u.active === false ? 'deactivated' : 'active';
+        let actions = '';
+        if (u.role === 'owner') {
+            actions += `<button class="btn btn-secondary" onclick="adminShowVehicles(${u.id})">Show Vehicles</button>`;
+        }
+        // allow quick conversion to renter if not already
+        if (u.role !== 'renter') {
+            actions += `<button class="btn btn-outline" onclick="adminChangeRole(${u.id}, 'renter')">Make Renter</button>`;
+        }
+        actions += `<button class="btn btn-outline" onclick="adminToggleUser(${u.id})">${u.active === false ? 'Activate' : 'Deactivate'}</button>`;
+        actions += `<button class="btn btn-danger" onclick="adminDeleteUser(${u.id})">Delete</button>`;
         return `<div class="admin-row">
             <div class="admin-row-main">
                 <strong class="admin-row-title">${name || 'Unnamed User'}</strong>
                 <small class="admin-row-meta">${u.email || '-'} • ${u.role || 'user'} • ${active}</small>
             </div>
             <div class="admin-row-actions">
-                <button class="btn btn-secondary" onclick="adminShowVehicles(${u.id})">Show Vehicles</button>
-                <button class="btn btn-outline" onclick="adminToggleUser(${u.id})">${u.active === false ? 'Activate' : 'Deactivate'}</button>
-                <button class="btn btn-danger" onclick="adminDeleteUser(${u.id})">Delete</button>
+                ${actions}
             </div>
         </div>`;
-    }).join('');
-    container.innerHTML = `<div class="admin-list">${rows}</div>`;
+    }
+
+    // build separate panels
+    let ownerHtml = '';
+    if(owners.length>0){
+        ownerHtml = '<div class="admin-subsection"><h3>Owners</h3>' + owners.map(userRow).join('') + '</div>';
+    }
+    let userHtml = '';
+    if(others.length>0){
+        userHtml = '<div class="admin-subsection"><h3>Users</h3>' + others.map(userRow).join('') + '</div>';
+    }
+
+    // two distinct lists
+    container.innerHTML = `
+        <div class="admin-list owners-list">${ownerHtml}</div>
+        <div class="admin-list users-list">${userHtml}</div>
+    `;
 }
 
 window.adminToggleUser = function(userId){
@@ -94,6 +122,19 @@ window.adminDeleteUser = function(userId){
     }catch(e){console.error(e)}
 }
 
+window.adminChangeRole = function(userId, newRole) {
+    if(!confirm(`Change user role to ${newRole}?`)) return;
+    try {
+        const users = getUsers();
+        const idx = users.findIndex(u => u.id === userId);
+        if(idx === -1) return;
+        users[idx].role = newRole;
+        saveUsers(users);
+        refreshAdminDashboard();
+        alert('User role updated');
+    } catch(e){ console.error(e); }
+}
+
 // show vehicles owned by a given user (matched by full name)
 window.adminShowVehicles = function(userId) {
     const users = getUsers();
@@ -114,7 +155,45 @@ window.adminShowVehicles = function(userId) {
     openOwnerVehiclesModal(name, owned);
 }
 
-// vehicle management removed from admin dashboard
+// vehicle management for admin
+
+function getVehicles(){
+    try{ const raw = localStorage.getItem('ownerVehicles'); return raw? JSON.parse(raw): []; }catch(e){return []}
+}
+
+function saveVehicles(v){ try{ localStorage.setItem('ownerVehicles', JSON.stringify(v)); }catch(e){} }
+
+function renderVehicles(){
+    const container = document.getElementById('admin-vehicles');
+    const vehicles = getVehicles();
+    if(!container) return;
+    if(vehicles.length===0){ container.innerHTML = '<div class="admin-empty">No vehicles</div>'; return; }
+    const rows = vehicles.map(v=>{
+        const statusText = v.status || 'unknown';
+        const statusClass = statusText.toLowerCase();
+        return `<div class="admin-row">
+            <div class="admin-row-main">
+                <strong class="admin-row-title">${v.brand || ''} ${v.name || ''}</strong>
+                <small class="admin-row-meta">${v.plate || '-'} • ${v.location || '-'} • <span class="admin-status-pill ${statusClass}">${statusText}</span></small>
+            </div>
+            <div class="admin-row-actions">
+                <button class="btn btn-outline" onclick="adminDeleteVehicle(${v.id})">Delete</button>
+            </div>
+        </div>`;
+    }).join('');
+    container.innerHTML = `<div class="admin-list">${rows}</div>`;
+}
+
+window.adminDeleteVehicle = function(id){
+    if(!confirm('Delete vehicle?')) return;
+    try{
+        let v = getVehicles();
+        v = v.filter(x=>x.id!==id);
+        saveVehicles(v);
+        refreshAdminDashboard();
+        alert('Vehicle deleted');
+    }catch(e){console.error(e)}
+}
 
 function getRentals(){
     try{ const raw = localStorage.getItem('rentalHistory'); return raw? JSON.parse(raw): []; }catch(e){return []}
@@ -128,8 +207,8 @@ function renderRentals(){
     if(!container) return;
     if(rentals.length===0){ container.innerHTML = '<div class="admin-empty">No rental records</div>'; return; }
     const rows = rentals.map(r=>{
-        const status = r.endDate ? 'Completed' : (r.returnRequested ? 'Return requested' : 'Ongoing');
-        const pillClass = r.endDate ? 'done' : 'pending';
+        const status = r.endDate ? 'Completed' : (r.returnRequested ? 'Return requested' : (r.status === 'pending' ? 'Pending Approval' : 'Ongoing'));
+        const pillClass = r.endDate ? 'done' : (r.status === 'pending' ? 'pending' : 'pending');
         return `<div class="admin-row">
             <div class="admin-row-main">
                 <strong class="admin-row-title">${r.vehicleName || 'Vehicle'}</strong>
@@ -137,7 +216,7 @@ function renderRentals(){
             </div>
             <div class="admin-row-actions">
                 <span class="admin-pill ${pillClass}">${status}</span>
-                ${!r.endDate ? `<button class="btn btn-primary" onclick="adminForceComplete(${r.id})">Force Complete</button>` : ''}
+                ${!r.endDate && r.status!=='pending' ? `<button class="btn btn-primary" onclick="adminForceComplete(${r.id})">Force Complete</button>` : ''}
             </div>
         </div>`;
     }).join('');
@@ -154,27 +233,77 @@ window.adminForceComplete = function(recordId){
         rentals[idx].returnAccepted = true;
         saveRentals(rentals);
 
-
         refreshAdminDashboard();
         alert('Rental marked completed');
     }catch(e){console.error(e)}
 }
 
+window.adminApproveBooking = function(recordId) {
+    if(!confirm('Approve this booking?')) return;
+    try {
+        const rentals = getRentals();
+        const idx = rentals.findIndex(r=>r.id===recordId);
+        if(idx===-1) return;
+        rentals[idx].status = 'approved';
+        saveRentals(rentals);
+        refreshAdminDashboard();
+        alert('Booking approved');
+    } catch(e){ console.error(e); }
+}
+
+window.adminRejectBooking = function(recordId) {
+    if(!confirm('Reject this booking?')) return;
+    try {
+        const rentals = getRentals();
+        const idx = rentals.findIndex(r=>r.id===recordId);
+        if(idx===-1) return;
+        rentals[idx].status = 'rejected';
+        saveRentals(rentals);
+        refreshAdminDashboard();
+        alert('Booking rejected');
+    } catch(e){ console.error(e); }
+}
+
+
+function renderApprovals(){
+    const container = document.getElementById('approvals-panel');
+    const rentals = getRentals().filter(r => r.status === 'pending');
+    if(!container) return;
+    if(rentals.length===0){ container.innerHTML = '<h2 class="panel-title">Approvals</h2><div class="admin-empty">No pending approvals</div>'; return; }
+    const rows = rentals.map(r=>{
+        return `<div class="admin-row">
+            <div class="admin-row-main">
+                <strong class="admin-row-title">${r.vehicleName || 'Vehicle'}</strong>
+                <small class="admin-row-meta">Renter: ${r.renterName || 'N/A'} • ${r.startDate ? new Date(r.startDate).toLocaleDateString() : ''}</small>
+            </div>
+            <div class="admin-row-actions">
+                <button class="btn btn-primary" onclick="adminApproveBooking(${r.id})">Approve</button>
+                <button class="btn btn-outline" onclick="adminRejectBooking(${r.id})">Reject</button>
+            </div>
+        </div>`;
+    }).join('');
+    container.innerHTML = `<h2 class="panel-title">Approvals</h2><div class="admin-list">${rows}</div>`;
+}
+
 function renderAnalytics() {
     const users = getUsers();
+    const vehicles = getVehicles();
     const rentals = getRentals();
 
     const totalUsers = users.length;
+    const activeVehicles = vehicles.filter(v => (v.status || '').toLowerCase() === 'available').length;
     const ongoingRentals = rentals.filter(r => !r.endDate).length;
     const dailyRevenue = rentals
         .filter(r => !r.endDate)
         .reduce((sum, rental) => sum + Number(rental.amount || 0), 0);
 
     const usersEl = document.getElementById('analytics-users');
+    const vehiclesEl = document.getElementById('analytics-vehicles');
     const rentalsEl = document.getElementById('analytics-rentals');
     const revenueEl = document.getElementById('analytics-revenue');
 
     if (usersEl) usersEl.textContent = String(totalUsers);
+    if (vehiclesEl) vehiclesEl.textContent = String(activeVehicles);
     if (rentalsEl) rentalsEl.textContent = String(ongoingRentals);
     if (revenueEl) revenueEl.textContent = `₱${dailyRevenue.toLocaleString()}`;
 }

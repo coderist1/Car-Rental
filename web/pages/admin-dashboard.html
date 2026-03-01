@@ -14,7 +14,7 @@
                 <div class="sidebar-brand">CarRental</div>
                 <nav class="sidebar-nav">
                     <a href="#" data-target="users-panel" class="active" onclick="navigateAdmin(event)">Users</a>
-                    <!-- Vehicles section removed -->
+                    <a href="#" data-target="vehicles-panel" onclick="navigateAdmin(event)">Vehicles</a>
                     <a href="#" data-target="approvals-panel" onclick="navigateAdmin(event)">Approvals</a>
                     <a href="#" data-target="rentals-panel" onclick="navigateAdmin(event)">Rentals</a>
                     <a href="#" data-target="analytics-panel" onclick="navigateAdmin(event)">Analytics</a>
@@ -40,7 +40,10 @@
                         <p class="analytics-label">Total Users</p>
                         <p class="analytics-value" id="analytics-users">0</p>
                     </article>
-                    <!-- Active Vehicles analytics removed -->
+                    <article class="analytics-card">
+                        <p class="analytics-label">Active Vehicles</p>
+                        <p class="analytics-value" id="analytics-vehicles">0</p>
+                    </article>
                     <article class="analytics-card">
                         <p class="analytics-label">Ongoing Rentals</p>
                         <p class="analytics-value" id="analytics-rentals">0</p>
@@ -57,7 +60,10 @@
                         <div id="admin-users">Loading users...</div>
                     </div>
 
-                    <!-- Vehicles panel removed -->
+                    <div id="vehicles-panel" class="admin-panel">
+                        <h2 class="panel-title">Vehicles</h2>
+                        <div id="admin-vehicles">Loading vehicles...</div>
+                    </div>
 
                     <div id="approvals-panel" class="admin-panel">
                         <h2 class="panel-title">Approvals</h2>
