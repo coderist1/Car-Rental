@@ -1,20 +1,5 @@
-/* =============================================================
-   damage-report.js  —  v2  FINAL
-   Place at:  scripts/damage-report.js
-   Load AFTER dashboard.js in dashboard.html
 
-   HOW IT WORKS:
-   1. Click "🔍 Damage Reports" on the dashboard toolbar.
-   2. Click "+ New Check-in" to record the car condition BEFORE the trip.
-   3. After the trip, open that check-in and click "🔁 Add Check-out".
-      → Vehicle & renter are pre-filled and locked automatically.
-      → You CANNOT save a check-out without a linked check-in.
-   4. Opening either report shows a side-by-side BEFORE / AFTER comparison.
-      → Issues that are NEW in the check-out are highlighted in red.
-   5. The condition checklist has an "+ Add Other" field for custom items.
-============================================================= */
 
-// ── Storage ────────────────────────────────────────────────────
 const DMG_KEY = 'damageReports';
 
 function loadDmgReports() {
@@ -25,13 +10,11 @@ function saveDmgReports(list) {
     try { localStorage.setItem(DMG_KEY, JSON.stringify(list)); } catch (e) {}
 }
 
-// ── Module-level state ─────────────────────────────────────────
 let _dmgType            = 'checkin';   // 'checkin' | 'checkout'
 let _dmgPhotos          = [];          // base64 strings
 let _dmgCustomItems     = [];          // [{ id, label }, ...]
 let _dmgLinkedCheckinId = null;        // id of the check-in this checkout links to
 
-// ── Default condition checklist ────────────────────────────────
 const DMG_DEFAULTS = [
     { id: 'exterior_scratches', label: 'Exterior scratches / dents'      },
     { id: 'windshield',         label: 'Windshield cracks / chips'        },
@@ -43,7 +26,6 @@ const DMG_DEFAULTS = [
     { id: 'fuel_low',           label: 'Fuel level low'                    },
 ];
 
-// ── DOM helpers ────────────────────────────────────────────────
 function $id(id) { return document.getElementById(id); }
 
 function dmgShow(id) {
@@ -55,7 +37,6 @@ function dmgHide(id) {
     if (el) el.style.display = 'none';
 }
 
-// ── Misc helpers ───────────────────────────────────────────────
 function dmgFmtDate(iso) {
     if (!iso) return '—';
     try { return new Date(iso).toLocaleString(); } catch (e) { return iso; }
@@ -67,7 +48,6 @@ function dmgNowLocal() {
 }
 
 function dmgGetVehicles() {
-    // Prefer live dashboard array; fall back to localStorage
     if (typeof vehicles !== 'undefined' && Array.isArray(vehicles)) return vehicles;
     try { return JSON.parse(localStorage.getItem('ownerVehicles') || '[]'); }
     catch (e) { return []; }
@@ -80,7 +60,6 @@ function dmgMakeLookup(report) {
     return lk;
 }
 
-// ── Badge counter on toolbar button ───────────────────────────
 function refreshDmgBadge() {
     const pill = $id('dmg-badge-pill');
     if (!pill) return;
@@ -89,9 +68,6 @@ function refreshDmgBadge() {
     pill.style.display = n > 0 ? 'inline-flex' : 'none';
 }
 
-// ══════════════════════════════════════════════════════════════
-//  LIST MODAL
-// ══════════════════════════════════════════════════════════════
 function openDamageReportsListModal() {
     renderDmgList();
     dmgShow('dmg-list-modal');
@@ -111,7 +87,6 @@ function renderDmgList() {
 
     let all = loadDmgReports();
 
-    // Apply search
     if (search) {
         all = all.filter(r =>
             (r.vehicleName || '').toLowerCase().includes(search) ||
@@ -120,11 +95,9 @@ function renderDmgList() {
         );
     }
 
-    // Split into checkins / checkouts
     let checkins  = all.filter(r => r.type === 'checkin');
     let checkouts = all.filter(r => r.type === 'checkout');
 
-    // Type filter (keep pairs together)
     if (filter === 'checkin')  checkouts = [];
     if (filter === 'checkout') checkins  = [];
 
@@ -139,7 +112,6 @@ function renderDmgList() {
 
     let html = '';
 
-    // Each check-in becomes a "trip group"; its linked check-out appears indented below
     checkins.forEach(ci => {
         const linkedCo   = checkouts.find(co => co.linkedCheckinId === ci.id);
         const ciCount    = (ci.issues || []).length;
@@ -192,7 +164,6 @@ function renderDmgList() {
         </div>`;
     });
 
-    // Orphan check-outs (check-in filtered out or missing)
     if (filter !== 'checkin') {
         checkouts
             .filter(co => !checkins.find(ci => ci.id === co.linkedCheckinId))
@@ -213,27 +184,20 @@ function renderDmgList() {
     container.innerHTML = html || '<p class="dmg-empty-msg">No matching records.</p>';
 }
 
-// ══════════════════════════════════════════════════════════════
-//  FORM MODAL
-// ══════════════════════════════════════════════════════════════
 
-/** Called by the "+ New Check-in" button in the list modal */
+
 function openNewReportFromList() {
     closeDamageReportsListModal();
     dmgOpenForm('checkin', null);
 }
 
-/** Called by "🔁 Add Check-out" button in the view modal */
+
 function startLinkedCheckout(checkinId) {
     closeDmgViewModal();
     dmgOpenForm('checkout', checkinId);
 }
 
-/**
- * Opens the new-report form.
- * @param {'checkin'|'checkout'} type
- * @param {string|null} linkedCheckinId  — required when type === 'checkout'
- */
+
 function dmgOpenForm(type, linkedCheckinId) {
     _dmgType            = type;
     _dmgPhotos          = [];
@@ -242,7 +206,7 @@ function dmgOpenForm(type, linkedCheckinId) {
 
     const isCheckout = type === 'checkout';
 
-    /* ── Header ── */
+    
     const emojiEl    = $id('dmg-form-emoji');
     const titleEl    = $id('dmg-form-title');
     const subtitleEl = $id('dmg-form-subtitle');
@@ -253,7 +217,7 @@ function dmgOpenForm(type, linkedCheckinId) {
         ? 'Document vehicle condition AFTER the trip'
         : 'Document vehicle condition BEFORE the trip';
 
-    /* ── Type buttons — locked when making a linked checkout ── */
+    
     document.querySelectorAll('.dmg-type-btn').forEach(btn => {
         const isActive = btn.dataset.type === type;
         btn.classList.toggle('active', isActive);
@@ -262,7 +226,7 @@ function dmgOpenForm(type, linkedCheckinId) {
         btn.title         = isCheckout ? 'Locked — this is a linked check-out' : '';
     });
 
-    /* ── Linked check-in banner ── */
+    
     const banner = $id('dmg-linked-banner');
     let prefillVehicleId = null;
     let prefillRenter    = '';
@@ -284,7 +248,7 @@ function dmgOpenForm(type, linkedCheckinId) {
         }
     }
 
-    /* ── Fields ── */
+    
     const dtEl = $id('dmg-datetime');
     if (dtEl) dtEl.value = dmgNowLocal();
 
@@ -294,14 +258,14 @@ function dmgOpenForm(type, linkedCheckinId) {
     const notesEl = $id('dmg-notes');
     if (notesEl) notesEl.value = '';
 
-    /* ── Rebuild checklist ── */
+    
     dmgRenderChecklist([]);
 
-    /* ── Clear photos ── */
+    
     const pg = $id('dmg-photo-grid');
     if (pg) pg.innerHTML = '';
 
-    /* ── Vehicle dropdown ── */
+    
     dmgPopulateVehicleDrop(prefillVehicleId, isCheckout && !!linkedCheckinId);
 
     dmgShow('dmg-form-modal');
@@ -323,7 +287,7 @@ function dmgPopulateVehicleDrop(prefillId, locked) {
     sel.style.opacity = locked ? '0.7' : '1';
 }
 
-/** Called by the type-toggle buttons in HTML — ignored if locked */
+
 function setDmgType(type, btn) {
     if (btn && btn.disabled) return;
     _dmgType = type;
@@ -340,9 +304,6 @@ function setDmgType(type, btn) {
         : 'Document vehicle condition BEFORE the trip';
 }
 
-// ══════════════════════════════════════════════════════════════
-//  CUSTOM CHECKLIST
-// ══════════════════════════════════════════════════════════════
 
 function dmgRenderChecklist(checkedIds) {
     const container = $id('dmg-checklist');
@@ -388,7 +349,6 @@ function dmgAddCustomItem() {
     const checked = dmgGetCheckedIssues();
     dmgRenderChecklist(checked);
 
-    // Auto-check the new item
     const cb = document.querySelector(`#dmg-checklist input[value="${id}"]`);
     if (cb) cb.checked = true;
 
@@ -407,9 +367,6 @@ function dmgGetCheckedIssues() {
     ).map(cb => cb.value);
 }
 
-// ══════════════════════════════════════════════════════════════
-//  PHOTO UPLOAD
-// ══════════════════════════════════════════════════════════════
 function initDmgPhotoUpload() {
     const input = $id('dmg-photo-input');
     if (!input) return;
@@ -444,9 +401,6 @@ function dmgRemovePhoto(i) {
     dmgRenderPhotoGrid();
 }
 
-// ══════════════════════════════════════════════════════════════
-//  SAVE REPORT
-// ══════════════════════════════════════════════════════════════
 function saveDmgReport() {
     const sel = $id('dmg-vehicle');
     if (!sel || !sel.value) { alert('Please select a vehicle.'); return; }
@@ -481,9 +435,6 @@ function saveDmgReport() {
     openDamageReportsListModal();
 }
 
-// ══════════════════════════════════════════════════════════════
-//  VIEW MODAL
-// ══════════════════════════════════════════════════════════════
 function openDmgViewModal(reportId) {
     const all    = loadDmgReports();
     const report = all.find(r => r.id === reportId);
@@ -492,12 +443,11 @@ function openDmgViewModal(reportId) {
     const isCI = report.type === 'checkin';
     const isCO = report.type === 'checkout';
 
-    // Find the linked partner
     let linked = null;
     if (isCI) linked = all.find(r => r.linkedCheckinId === report.id);
     if (isCO && report.linkedCheckinId) linked = all.find(r => r.id === report.linkedCheckinId);
 
-    /* ── Header ── */
+    
     const emojiEl = $id('dmg-view-emoji');
     const titleEl = $id('dmg-view-title');
     const subEl   = $id('dmg-view-sub');
@@ -508,11 +458,11 @@ function openDmgViewModal(reportId) {
         : (isCI ? 'Check-in Report' : 'Check-out Report');
     if (subEl)   subEl.textContent   = dmgFmtDate(report.datetime);
 
-    /* ── Delete button ── */
+    
     const delBtn = $id('dmg-view-delete');
     if (delBtn) delBtn.onclick = () => dmgDeleteReport(reportId);
 
-    /* ── "Add Check-out" button — only for unlinked check-ins ── */
+    
     const addCoBtn = $id('dmg-view-add-checkout');
     if (addCoBtn) {
         if (isCI && !linked) {
@@ -523,12 +473,11 @@ function openDmgViewModal(reportId) {
         }
     }
 
-    /* ── Body ── */
+    
     const body = $id('dmg-view-body');
     if (!body) return;
 
     if (linked) {
-        // ── SIDE-BY-SIDE comparison ──────────────────────────
         const ciR  = isCI ? report : linked;
         const coR  = isCO ? report : linked;
         const ciLk = dmgMakeLookup(ciR);
@@ -561,7 +510,6 @@ function openDmgViewModal(reportId) {
             </div>`;
 
     } else {
-        // ── Single report (partner not yet added) ────────────
         const lk = dmgMakeLookup(report);
         body.innerHTML = `
             <div class="dmg-view-grid">
@@ -604,7 +552,6 @@ function dmgDeleteReport(id) {
     renderDmgList();
 }
 
-// ── Block builders ─────────────────────────────────────────────
 function dmgConditionBlock(report, labels, compareIssues) {
     const issues    = report.issues || [];
     const newIssues = compareIssues
@@ -653,7 +600,6 @@ function dmgPhotosBlock(r) {
     </div>`;
 }
 
-// ── Photo lightbox ─────────────────────────────────────────────
 function dmgOpenLightbox(reportId, i) {
     const r = loadDmgReports().find(x => x.id === reportId);
     if (!r?.photos?.[i]) return;
@@ -675,18 +621,15 @@ function dmgOpenLightbox(reportId, i) {
     document.body.appendChild(lb);
 }
 
-// ── Initialise ─────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     refreshDmgBadge();
     initDmgPhotoUpload();
 
-    // Close modal when clicking the dark backdrop
     ['dmg-list-modal', 'dmg-form-modal', 'dmg-view-modal'].forEach(id => {
         const m = $id(id);
         if (m) m.addEventListener('click', e => { if (e.target === m) m.style.display = 'none'; });
     });
 
-    // Search / filter inside list modal
     $id('dmg-list-search')?.addEventListener('input',  renderDmgList);
     $id('dmg-list-filter')?.addEventListener('change', renderDmgList);
 });

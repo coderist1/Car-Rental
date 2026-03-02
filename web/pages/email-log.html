@@ -21,7 +21,7 @@
       </tr>
     </thead>
     <tbody id="emailTableBody">
-      <!-- filled by script -->
+      
     </tbody>
   </table>
 
@@ -41,7 +41,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      // mark as viewed so notification dot clears
       try { localStorage.setItem('emailLastViewed', new Date().toISOString()); } catch(e){}
       renderEmails();
       document.getElementById('clearLogBtn').addEventListener('click', () => {

@@ -40,7 +40,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Soft ambient gradient */
+
 body::after {
   content: '';
   position: fixed;
@@ -52,7 +52,7 @@ body::after {
   z-index: 0;
 }
 
-/* ── App Shell ── */
+
 .app {
   max-width: 1140px;
   margin: 0 auto;
@@ -61,7 +61,7 @@ body::after {
   z-index: 1;
 }
 
-/* ── Header ── */
+
 .header {
   display: flex;
   align-items: flex-start;
@@ -123,7 +123,7 @@ body::after {
   margin-top: 5px;
 }
 
-/* ── Stats Bar ── */
+
 .stats-bar {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -147,7 +147,7 @@ body::after {
   overflow: hidden;
 }
 
-/* Colored top accent strip per stat */
+
 .stat::before {
   content: '';
   position: absolute;
@@ -185,7 +185,7 @@ body::after {
 .stat-value.cancelled { color: var(--cancelled); }
 .stat-value.total     { color: var(--text); }
 
-/* ── Controls ── */
+
 .controls {
   display: flex;
   gap: 10px;
@@ -230,7 +230,7 @@ body::after {
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
-/* Segmented filter tabs inside a pill container */
+
 .filter-tabs {
   display: flex;
   gap: 0;
@@ -287,7 +287,7 @@ body::after {
 }
 .sort-select option { background: #fff; }
 
-/* ── Table Card ── */
+
 .table-wrap {
   background: var(--surface);
   border-radius: var(--radius-xl);
@@ -315,7 +315,7 @@ body::after {
 }
 .th.right { text-align: right; }
 
-/* ── Booking Rows ── */
+
 .booking-row {
   display: grid;
   grid-template-columns: 72px 1.3fr 1.3fr 1fr 110px 120px;
@@ -343,7 +343,7 @@ body::after {
 .booking-row:hover { background: #f5f8ff; }
 .booking-row:hover::before { background: var(--accent); }
 
-/* Pill-style booking ID */
+
 .booking-id {
   font-family: 'DM Mono', monospace;
   font-size: 0.68rem;
@@ -388,7 +388,7 @@ body::after {
   color: var(--text);
 }
 
-/* ── Status Badge ── */
+
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -429,7 +429,7 @@ body::after {
 }
 .status-badge.pending::before { background: var(--pending); }
 
-/* Return requested — amber/orange, distinct from pending */
+
 .status-badge.return-req {
   color: #b45309;
   background: rgba(245,158,11,0.10);
@@ -446,7 +446,7 @@ body::after {
 .status-badge.cancelled::before,
 .status-badge.rejected::before { background: var(--cancelled); }
 
-/* ── Empty State ── */
+
 .empty-state {
   text-align: center;
   padding: 72px 32px;
@@ -468,7 +468,7 @@ body::after {
   line-height: 1.6;
 }
 
-/* ── Footer ── */
+
 .footer {
   margin-top: 20px;
   display: flex;
@@ -514,13 +514,13 @@ body::after {
 }
 .page-btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
 
-/* ── Animation ── */
+
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Responsive ── */
+
 @media (max-width: 900px) {
   .stats-bar { grid-template-columns: repeat(3, 1fr); }
 }

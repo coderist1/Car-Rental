@@ -51,7 +51,7 @@
     display: block;
 }
 
-/* hide all panels initially; script will show the selected one */
+
 .admin-panel {
     display: none;
 }
@@ -197,7 +197,7 @@
     }
 }
 
-/* owner vehicles modal styles (modern cards) */
+
 .owner-vehicle-list {
     padding: 16px;
     display: grid;
@@ -243,7 +243,7 @@
 .owner-vehicle-status.rented {
     color: #ef4444;
 }
-/* modal backdrop softer and header cleaner */
+
 #owner-vehicles-modal .modal-content {
     max-width: 800px;
     width: 90%;
@@ -265,7 +265,7 @@
     background: rgba(0,0,0,0.4);
 }
 
-/* sidebar layout */
+
 .admin-layout {
     display: flex;
     gap: 16px;

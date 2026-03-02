@@ -1,5 +1,3 @@
-// Dashboard JavaScript
-// Vehicles are managed by owners; no default sample cars are included
 const STORAGE_KEY = 'ownerVehicles';
 
 let vehicles = [];
@@ -8,14 +6,12 @@ let editingVehicleId = null;
 let showingAvailable = false; // track if we are filtering to available cars
 let showingRented = false; // track if we are filtering to rented cars
 
-// current owner profile (name/email) for tagging vehicles
 let currentOwnerProfile = { name: 'Owner', email: '' };
 
 function getCurrentOwnerProfile() {
     return currentOwnerProfile;
 }
 
-// Initialize the dashboard
 function initDashboard() {
     const storedVehicles = loadStoredVehicles();
     if (storedVehicles && storedVehicles.length > 0) {
@@ -28,23 +24,18 @@ function initDashboard() {
     renderVehicles();
     setupSearch();
 
-    // make available stat card clickable
     const availableCard = document.getElementById('availableCard');
     if (availableCard) {
         availableCard.addEventListener('click', viewAvailable);
     }
-    // make rented stat card clickable
     const rentedCard = document.getElementById('rentedCard');
     if (rentedCard) {
         rentedCard.addEventListener('click', viewRented);
     }
-    // Load owner profile into header and profile menu
     loadOwnerProfile();
-    // Rental history initialization
     loadRentalHistory();
 }
 
-// Rental history storage (only created when an existing vehicle is marked rented)
 let rentalHistory = [];
 
 function loadRentalHistory() {
@@ -59,7 +50,7 @@ function loadRentalHistory() {
 function saveRentalHistory() {
     try {
         localStorage.setItem('rentalHistory', JSON.stringify(rentalHistory));
-    } catch (e) { /* ignore */ }
+    } catch (e) {  }
 }
 
 function renderRentalHistory() {
@@ -129,7 +120,6 @@ function clearRentalHistory() {
     });
 }
 
-// Add a rental record when an existing vehicle's status changes to 'rented'
 function addRentalRecord(vehicle) {
     try {
         const ownerName = (() => {
@@ -159,7 +149,6 @@ function addRentalRecord(vehicle) {
     }
 }
 
-// Accept a return request from renter
 window.acceptReturn = function(recordId) {
     try {
         const recIndex = rentalHistory.findIndex(r => r.id === recordId);
@@ -167,7 +156,6 @@ window.acceptReturn = function(recordId) {
         const rec = rentalHistory[recIndex];
         if (!rec.returnRequested) return;
 
-        // Mark return accepted
         rec.returnAccepted = true;
         rec.returnAcceptedAt = new Date().toISOString();
         rec.endDate = rec.endDate || new Date().toISOString();
@@ -175,12 +163,10 @@ window.acceptReturn = function(recordId) {
         rentalHistory[recIndex] = rec;
         saveRentalHistory();
 
-        // Update vehicle availability
         const vehicleIndex = vehicles.findIndex(v => v.id === rec.vehicleId);
         if (vehicleIndex !== -1) {
             vehicles[vehicleIndex].status = 'available';
             vehicles[vehicleIndex].available = true;
-            // clear pending return marker
             delete vehicles[vehicleIndex].pendingReturn;
             saveStoredVehicles();
             updateStats();
@@ -194,17 +180,14 @@ window.acceptReturn = function(recordId) {
     }
 };
 
-// Approve a booking request
 window.approveBooking = function(recordId) {
     try {
         const recIndex = rentalHistory.findIndex(r => r.id === recordId);
         if (recIndex === -1) return;
         
-        // Update rental record
         rentalHistory[recIndex].status = 'active';
         saveRentalHistory();
 
-        // Update vehicle status to rented
         const vehicleIndex = vehicles.findIndex(v => v.id === rentalHistory[recIndex].vehicleId);
         if (vehicleIndex !== -1) {
             vehicles[vehicleIndex].status = 'rented';
@@ -218,19 +201,16 @@ window.approveBooking = function(recordId) {
     } catch (e) { console.error(e); }
 };
 
-// Reject a booking request
 window.rejectBooking = function(recordId) {
     if (!confirm('Reject this booking request?')) return;
     try {
         const recIndex = rentalHistory.findIndex(r => r.id === recordId);
         if (recIndex === -1) return;
 
-        // Update rental record
         rentalHistory[recIndex].status = 'rejected';
         rentalHistory[recIndex].endDate = new Date().toISOString(); // Mark as closed
         saveRentalHistory();
 
-        // Update vehicle status back to available
         const vehicleIndex = vehicles.findIndex(v => v.id === rentalHistory[recIndex].vehicleId);
         if (vehicleIndex !== -1) {
             vehicles[vehicleIndex].status = 'available';
@@ -269,11 +249,9 @@ function saveStoredVehicles() {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(vehicles.map(normalizeVehicle)));
     } catch (err) {
-        // Ignore storage errors (private mode, quota).
     }
 }
 
-// Update statistics
 function updateStats(list = vehicles) {
     const total = list.length;
     const available = list.filter(v => v.available).length;
@@ -289,7 +267,6 @@ function updateStats(list = vehicles) {
     if (earningsEl) earningsEl.textContent = `₱${estimatedDailyEarnings.toLocaleString()}`;
 }
 
-// Load owner profile from storage and update header/menu
 function loadOwnerProfile() {
     let name = 'Owner';
     let email = '';
@@ -301,7 +278,6 @@ function loadOwnerProfile() {
             email = u.email || '';
         }
     } catch (e) {
-        // ignore parse errors
     }
 
     currentOwnerProfile = { name, email };
@@ -313,9 +289,7 @@ function loadOwnerProfile() {
     if (pm) pm.setAttribute('username', name);
 }
 
-// rental history removed
 
-// Render vehicles grid
 function renderVehicles(filteredVehicles = vehicles) {
     const grid = document.getElementById('vehicles-grid');
 
@@ -331,7 +305,6 @@ function renderVehicles(filteredVehicles = vehicles) {
         return;
     }
 
-    // Wait for custom element to be defined before rendering
     customElements.whenDefined('vehicle-card').then(() => {
         grid.innerHTML = '';
         filteredVehicles.forEach(vehicle => {
@@ -368,8 +341,6 @@ function renderVehicles(filteredVehicles = vehicles) {
     });
 }
 
-// Open car details page: store selected vehicle and navigate
-// Open car details modal: populate and show modal overlay
 function openCarDetails(id){
     const vehicle = vehicles.find(v=>v.id===id);
     if(!vehicle) return;
@@ -386,7 +357,6 @@ function populateCarDetailModal(vehicle){
     document.getElementById('modal-availability').value = vehicle.status || (vehicle.available ? 'available' : 'rented');
     if(document.getElementById('modal-location')) document.getElementById('modal-location').value = vehicle.location || 'Manila';
     document.getElementById('modal-description').value = vehicle.description || '';
-    // image
     const img = document.getElementById('modal-car-image');
     if(vehicle.image) img.src = vehicle.image;
 
@@ -404,11 +374,9 @@ function closeCarDetailModal(){
     document.getElementById('car-detail-modal').style.display = 'none';
 }
 
-// Setup search functionality
 function setupSearch() {
     const searchInput = document.getElementById('search-input');
     searchInput.addEventListener('input', function() {
-        // if user is typing, cancel available or rented filter view
         if (showingAvailable || showingRented) {
             showingAvailable = false;
             showingRented = false;
@@ -437,7 +405,6 @@ function viewAvailable() {
         showingRented = false;
         if (availableCard) availableCard.classList.add('active');
         if (rentedCard) rentedCard.classList.remove('active');
-        // clear search field
         const si = document.getElementById('search-input');
         if (si) si.value = '';
     } else {
@@ -469,14 +436,12 @@ function viewRented() {
     }
 }
 
-// Modal functions
 function openAddModal() {
     editingVehicleId = null;
     document.getElementById('modal-title').textContent = 'Add New Vehicle';
     document.getElementById('vehicle-form').reset();
     const availabilitySelect = document.getElementById('vehicle-availability');
     if (availabilitySelect) availabilitySelect.value = 'available';
-    // reset image preview and internal image data
     const preview = document.getElementById('vehicle-image-preview');
     if(preview) preview.src = '../assets/car-placeholder.jpg';
     window._vehicleImageDataUrl = null;
@@ -490,7 +455,6 @@ function editVehicle(id) {
     editingVehicleId = id;
     document.getElementById('modal-title').textContent = 'Edit Vehicle';
 
-    // Populate form
     document.getElementById('vehicle-name').value = vehicle.name;
     document.getElementById('vehicle-brand').value = vehicle.brand;
     document.getElementById('vehicle-year').value = vehicle.year;
@@ -506,7 +470,6 @@ function editVehicle(id) {
     if(document.getElementById('vehicle-plate')) document.getElementById('vehicle-plate').value = vehicle.plate || '';
     if(document.getElementById('vehicle-color')) document.getElementById('vehicle-color').value = vehicle.color || '';
     if(document.getElementById('vehicle-description')) document.getElementById('vehicle-description').value = vehicle.description || '';
-    // populate image preview & internal data
     const preview = document.getElementById('vehicle-image-preview');
     if(preview && vehicle.image) preview.src = vehicle.image;
     window._vehicleImageDataUrl = vehicle.image || null;
@@ -520,7 +483,6 @@ function closeModal() {
 }
 
 function saveVehicle() {
-    // gather form fields
     const formData = {
         name: document.getElementById('vehicle-name').value,
         brand: document.getElementById('vehicle-brand').value,
@@ -543,7 +505,6 @@ function saveVehicle() {
         image: window._vehicleImageDataUrl || getVehicleImage(document.getElementById('vehicle-type').value)
     };
 
-    // tag with current owner information so admin can later look up
     const ownerProfile = getCurrentOwnerProfile();
     if (ownerProfile.name) formData.owner = ownerProfile.name;
     if (ownerProfile.email) formData.ownerEmail = ownerProfile.email;
@@ -553,21 +514,17 @@ function saveVehicle() {
         return;
     }
 
-    // Ask for confirmation when editing existing vehicle
     if (editingVehicleId) {
         showConfirm('Save changes to this vehicle?').then(ok => {
             if (!ok) return; // User cancelled
 
-            // Update existing vehicle
             const index = vehicles.findIndex(v => v.id === editingVehicleId);
             if (index === -1) return;
             const prevStatus = vehicles[index].status || (vehicles[index].available ? 'available' : 'rented');
-            // make sure owner info persists (do not overwrite if blank)
             if (!formData.owner) formData.owner = vehicles[index].owner;
             if (!formData.ownerEmail) formData.ownerEmail = vehicles[index].ownerEmail;
             vehicles[index] = { ...vehicles[index], ...formData };
 
-            // If status changed to rented, add history record
             if (prevStatus !== 'rented' && formData.status === 'rented') {
                 addRentalRecord({ id: editingVehicleId, ...vehicles[index] });
             }
@@ -579,12 +536,10 @@ function saveVehicle() {
             closeModal();
         });
     } else {
-        // Add new vehicle (no confirmation needed for new items)
         const newId = Math.max(...vehicles.map(v => v.id), 0) + 1;
         const newVehicle = { id: newId, ...formData };
         vehicles.push(newVehicle);
 
-        // Do not automatically create rental history when adding a vehicle
         saveStoredVehicles();
 
         updateStats();
@@ -618,15 +573,12 @@ function getVehicleImage(type){
     return imgs[type] || imgs['Sedan'];
 }
 
-// Initialize when page loads
 document.addEventListener('DOMContentLoaded', initDashboard);
 
-// Update header when profile changes elsewhere
 window.addEventListener('profileUpdated', (e) => {
     loadOwnerProfile();
 });
 
-// Generic showConfirm that returns a Promise<boolean>
 function showConfirm(message){
     return customElements.whenDefined('confirm-modal').then(() => {
         const modal = document.getElementById('confirm-modal');
@@ -638,7 +590,6 @@ function showConfirm(message){
     });
 }
 
-// Close modal when clicking outside
 window.onclick = function(event) {
     const addModal = document.getElementById('vehicle-modal');
     const detailModal = document.getElementById('car-detail-modal');
@@ -650,7 +601,6 @@ window.onclick = function(event) {
     }
 }
 
-// handle vehicle image input preview and data URL storage
 document.addEventListener('DOMContentLoaded', ()=>{
     const input = document.getElementById('vehicle-image-input');
     const preview = document.getElementById('vehicle-image-preview');

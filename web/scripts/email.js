@@ -1,5 +1,3 @@
-// email.js - simple "notification" system that records outgoing emails in localStorage
-// This mimics sending emails in a client-only app by persisting message data
 
 (function () {
     const STORAGE_KEY = 'emailQueue';
@@ -34,7 +32,6 @@
         queue.push(entry);
         _saveQueue(queue);
         console.log('Email logged', entry);
-        // notify listeners on same window
         window.dispatchEvent(new Event('emailSent'));
         return entry;
     };
@@ -47,6 +44,5 @@
         localStorage.removeItem(STORAGE_KEY);
     };
 
-    // signal that helper is defined so other scripts can react
     window.dispatchEvent(new Event('emailHelperReady'));
 })();

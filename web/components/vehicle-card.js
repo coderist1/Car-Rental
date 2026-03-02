@@ -1,4 +1,3 @@
-// vehicle-card.js - Reusable vehicle card component
 class VehicleCard extends HTMLElement {
     constructor() {
         super();
@@ -342,7 +341,6 @@ class VehicleCard extends HTMLElement {
             });
         });
 
-        // Card click for view details
         const card = this.shadowRoot.querySelector('.vehicle-card');
         if (card) {
             card.addEventListener('click', () => {

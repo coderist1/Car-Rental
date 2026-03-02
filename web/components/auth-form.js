@@ -1,4 +1,3 @@
-// auth-form.js - Reusable authentication form component
 class AuthForm extends HTMLElement {
     constructor() {
         super();
@@ -216,14 +215,12 @@ class AuthForm extends HTMLElement {
                 submitBtn.textContent = 'Signing In...';
                 submitBtn.disabled = true;
 
-                // Emit custom event with credentials
                 this.dispatchEvent(new CustomEvent('auth-submit', {
                     bubbles: true,
                     composed: true,
                     detail: { email, password, isAdmin }
                 }));
 
-                // Reset button after a short delay
                 setTimeout(() => {
                     submitBtn.textContent = isAdmin ? 'Admin Sign In' : 'Sign In';
                     submitBtn.disabled = false;

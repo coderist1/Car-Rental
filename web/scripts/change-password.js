@@ -1,4 +1,3 @@
-// change-password.js - Change Password Management
 
 class ChangePasswordManager {
     constructor() {
@@ -8,20 +7,16 @@ class ChangePasswordManager {
     }
 
     initializeElements() {
-        // Form and buttons
         this.form = document.getElementById('passwordForm');
         this.submitBtn = document.getElementById('submitBtn');
         this.formMessage = document.getElementById('formMessage');
 
-        // Password fields
         this.currentPassword = document.getElementById('currentPassword');
         this.newPassword = document.getElementById('newPassword');
         this.confirmPassword = document.getElementById('confirmPassword');
 
-        // Toggle buttons
         this.toggleBtns = document.querySelectorAll('.toggle-password-btn');
 
-        // Password requirements
         this.requirements = {
             length: document.getElementById('req-length'),
             uppercase: document.getElementById('req-uppercase'),
@@ -30,7 +25,6 @@ class ChangePasswordManager {
             match: document.getElementById('req-match')
         };
 
-        // Strength elements
         this.strengthBar = document.getElementById('strengthBar');
         this.strengthText = document.getElementById('strengthText');
         this.matchHint = document.getElementById('matchHint');
@@ -56,15 +50,12 @@ class ChangePasswordManager {
     }
 
     attachEventListeners() {
-        // Form submission
         this.form.addEventListener('submit', (e) => this.handleSubmit(e));
 
-        // Password visibility toggle
         this.toggleBtns.forEach(btn => {
             btn.addEventListener('click', (e) => this.togglePasswordVisibility(e));
         });
 
-        // Password field interactions
         this.currentPassword.addEventListener('blur', () => this.validateCurrentPassword());
         this.newPassword.addEventListener('input', () => this.handleNewPasswordInput());
         this.confirmPassword.addEventListener('input', () => this.updatePasswordMatch());
@@ -105,7 +96,6 @@ class ChangePasswordManager {
         this.clearMessage();
         let isValid = true;
 
-        // Check current password
         if (!this.currentPassword.value) {
             this.showMessage('Please enter your current password', 'error');
             this.currentPassword.classList.add('error');
@@ -114,12 +104,10 @@ class ChangePasswordManager {
             this.currentPassword.classList.remove('error');
         }
 
-        // Check new password
         if (!this.validateNewPassword()) {
             isValid = false;
         }
 
-        // Check confirm password
         if (!this.confirmPassword.value) {
             this.showMessage('Please confirm your new password', 'error');
             this.confirmPassword.classList.add('error');
@@ -132,7 +120,6 @@ class ChangePasswordManager {
             this.confirmPassword.classList.remove('error');
         }
 
-        // Check if new password is different from current
         if (this.currentPassword.value === this.newPassword.value) {
             this.showMessage('New password must be different from current password', 'error');
             this.newPassword.classList.add('error');
@@ -164,7 +151,6 @@ class ChangePasswordManager {
                 return false;
             }
 
-            // Check if entered password matches stored password
             if (this.currentPassword.value === user.password) {
                 this.currentPassword.classList.remove('error');
                 return true;
@@ -305,7 +291,6 @@ class ChangePasswordManager {
             this.confirmPassword.classList.add('error');
         }
 
-        // Update match requirement
         const requirements = this.checkPasswordRequirements(pwd);
         this.updateRequirement('match', requirements.match);
     }
@@ -316,7 +301,6 @@ class ChangePasswordManager {
         this.submitBtn.classList.add('loading');
         this.submitBtn.textContent = 'Updating...';
 
-        // Validate current password first
         setTimeout(() => {
             if (!this.validateCurrentPassword()) {
                 this.resetButtonState();
@@ -356,29 +340,23 @@ class ChangePasswordManager {
                 return;
             }
 
-            // Update password
             users[userIndex].password = this.newPassword.value;
             users[userIndex].updatedAt = new Date().toISOString();
 
-            // Save to localStorage
             localStorage.setItem('carRentalUsers', JSON.stringify(users));
 
-            // Show success
             this.showMessage('Password updated successfully', 'success');
 
-            // Reset form
             setTimeout(() => {
                 this.form.reset();
                 this.clearUI();
                 this.resetButtonState();
                 this.isSubmitting = false;
 
-                // Dispatch event
                 window.dispatchEvent(new CustomEvent('passwordUpdated', {
                     detail: { email: currentEmail }
                 }));
 
-                // Redirect after 2 seconds
                 setTimeout(() => {
                     window.history.back();
                 }, 2000);
@@ -393,21 +371,17 @@ class ChangePasswordManager {
     }
 
     clearUI() {
-        // Clear password strength
         this.strengthBar.className = 'strength-bar';
         this.strengthText.className = 'strength-text';
         this.strengthText.textContent = 'Weak';
 
-        // Clear match hint
         this.matchHint.textContent = '';
         this.matchHint.className = '';
 
-        // Clear error classes
         [this.currentPassword, this.newPassword, this.confirmPassword].forEach(field => {
             field.classList.remove('error');
         });
 
-        // Clear requirements
         Object.values(this.requirements).forEach(el => {
             el.classList.remove('met');
         });
@@ -430,7 +404,6 @@ class ChangePasswordManager {
     }
 }
 
-// Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
     new ChangePasswordManager();
 });

@@ -1,5 +1,3 @@
-// audit.js - enhanced audit logging for admin actions
-// records actions with detailed tracking and filtering capabilities
 
 (function () {
     const STORAGE_KEY = 'auditLog';
@@ -22,7 +20,6 @@
         }
     }
 
-    // Get current admin info from userProfile
     function _getCurrentUser() {
         try {
             const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');

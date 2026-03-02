@@ -1,8 +1,5 @@
-// Renter Dashboard JavaScript
-// Default sample vehicles
 const VEHICLE_STORAGE_KEY = 'ownerVehicles';
 const SAVED_CARS_STORAGE_KEY = 'renterSavedCars';
-// no seeded vehicles by default, owners will add their own
 const defaultVehicles = [];
 
 function normalizeVehicle(vehicle) {
@@ -45,7 +42,6 @@ function loadVehiclesFromStorage() {
     } catch (error) {
     }
 
-    // no defaults; start empty
     saveVehiclesToStorage([]);
     return [];
 }
@@ -78,10 +74,8 @@ function saveSavedCars(savedCars) {
 document.addEventListener('DOMContentLoaded', function() {
     let vehicles = [];
     let savedCars = loadSavedCars();
-    // track whether the dashboard is currently showing saved vehicles
     let showingSaved = false;
 
-    // DOM Elements
     const searchInput = document.getElementById('searchInput');
     const filterButton = document.getElementById('filterButton');
     const filterModal = document.getElementById('filterModal');
@@ -93,14 +87,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeDetail = document.getElementById('closeDetail');
     const profileMenu = document.getElementById('profileMenu');
 
-    // Filter elements
     const typeFilters = document.querySelectorAll('.filter-option[data-filter="type"]');
     const transmissionFilters = document.querySelectorAll('.filter-option[data-filter="transmission"]');
     const fuelFilters = document.querySelectorAll('.filter-option[data-filter="fuel"]');
     const minPriceInput = document.getElementById('minPrice');
     const maxPriceInput = document.getElementById('maxPrice');
 
-    // Current filters
     let currentFilters = {
         search: '',
         types: [],
@@ -110,15 +102,12 @@ document.addEventListener('DOMContentLoaded', function() {
         maxPrice: ''
     };
 
-    // Initialize with stored vehicles
     vehicles = loadVehiclesFromStorage();
     renderVehicles(vehicles);
     updateStats(vehicles);
-    // Load renter profile + rental history for renter view
     loadRenterProfile();
     loadRenterRentalHistory();
 
-    // Event Listeners
     searchInput.addEventListener('input', handleSearch);
     filterButton.addEventListener('click', openFilterModal);
     closeFilter.addEventListener('click', closeFilterModal);
@@ -126,38 +115,31 @@ document.addEventListener('DOMContentLoaded', function() {
     applyFilters.addEventListener('click', applyFiltersHandler);
     clearFilters.addEventListener('click', clearFiltersHandler);
 
-    // Profile Menu Event Listener
     profileMenu.addEventListener('menu-action', (e) => {
         handleMenuAction(e.detail.action);
     });
 
-    // Update greeting/profile when profile changes
     window.addEventListener('profileUpdated', () => {
         loadRenterProfile();
-        // refresh renter rental history view if open
         if (document.getElementById('renter-rental-history-modal') && document.getElementById('renter-rental-history-modal').style.display === 'block') {
             loadRenterRentalHistory();
             renderRenterHistoryForUser();
         }
     });
 
-    // My Rentals button
     const myRentalsBtn = document.getElementById('myRentalsBtn');
     if (myRentalsBtn) myRentalsBtn.addEventListener('click', openRenterHistoryModal);
 
-    // Saved card container (makes the whole card clickable)
     const savedCard = document.getElementById('savedCardContainer');
     if (savedCard) {
         savedCard.addEventListener('click', viewSavedCars);
     }
 
-    // Close renter history buttons
     const closeRenterHistory = document.getElementById('closeRenterHistory');
     const closeRenterHistoryFooter = document.getElementById('closeRenterHistoryFooter');
     if (closeRenterHistory) closeRenterHistory.addEventListener('click', closeRenterHistoryModal);
     if (closeRenterHistoryFooter) closeRenterHistoryFooter.addEventListener('click', closeRenterHistoryModal);
 
-    // Close modals when clicking outside
     window.addEventListener('click', function(event) {
         if (event.target === filterModal) {
             closeFilterModal();
@@ -167,24 +149,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Listen for storage changes to update UI in real-time from other tabs
     window.addEventListener('storage', (event) => {
         if (event.key === 'rentalHistory') {
             loadRenterRentalHistory();
-            // If the history modal is open, refresh its content
             const historyModal = document.getElementById('renter-rental-history-modal');
             if (historyModal && historyModal.style.display === 'block') {
                 renderRenterHistoryForUser();
             }
         }
         if (event.key === VEHICLE_STORAGE_KEY) {
-            // Reload vehicles if they were changed (e.g., owner updated details)
             vehicles = loadVehiclesFromStorage();
             filterVehicles();
         }
     });
 
-    // ===== Profile Menu Actions =====
     function handleMenuAction(action) {
         switch(action) {
             case 'profile':
@@ -206,22 +184,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function handleLogout() {
-        // Show confirmation before logout
         const confirmed = confirm('Are you sure you want to logout?');
         if (confirmed) {
-            // Clear any session data if needed
             sessionStorage.clear();
             navigateToPage('../index.html');
         }
     }
 
-    // ===== Search Functionality =====
     function handleSearch() {
         currentFilters.search = searchInput.value.toLowerCase();
         filterVehicles();
     }
 
-    // ===== Filter Modal Functions =====
     function openFilterModal() {
         filterModal.style.display = 'block';
         document.body.style.overflow = 'hidden';
@@ -238,22 +212,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function applyFiltersHandler() {
-        // Get selected types
         currentFilters.types = Array.from(typeFilters)
             .filter(option => option.classList.contains('active'))
             .map(option => option.textContent);
 
-        // Get selected transmissions
         currentFilters.transmissions = Array.from(transmissionFilters)
             .filter(option => option.classList.contains('active'))
             .map(option => option.textContent);
 
-        // Get selected fuels
         currentFilters.fuels = Array.from(fuelFilters)
             .filter(option => option.classList.contains('active'))
             .map(option => option.textContent);
 
-        // Get price range
         currentFilters.minPrice = minPriceInput.value;
         currentFilters.maxPrice = maxPriceInput.value;
 
@@ -263,14 +233,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function clearFiltersHandler() {
-        // Clear all filter selections
         document.querySelectorAll('.filter-option').forEach(option => {
             option.classList.remove('active');
         });
         minPriceInput.value = '';
         maxPriceInput.value = '';
 
-        // Reset current filters
         currentFilters = {
             search: currentFilters.search,
             types: [],
@@ -285,14 +253,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function filterVehicles() {
-        // if the user begins filtering/searching, exit saved preview
         if (showingSaved) {
             showingSaved = false;
             const savedCardElem = document.getElementById('savedCardContainer');
             if (savedCardElem) savedCardElem.classList.remove('active');
         }
         let filteredVehicles = vehicles.filter(vehicle => {
-            // Search filter
             if (currentFilters.search) {
                 const searchTerm = currentFilters.search.toLowerCase();
                 const name = (vehicle.name || '').toLowerCase();
@@ -305,22 +271,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // Type filter
             if (currentFilters.types.length > 0 && !currentFilters.types.includes(vehicle.type)) {
                 return false;
             }
 
-            // Transmission filter
             if (currentFilters.transmissions.length > 0 && !currentFilters.transmissions.includes(vehicle.transmission)) {
                 return false;
             }
 
-            // Fuel filter
             if (currentFilters.fuels.length > 0 && !currentFilters.fuels.includes(vehicle.fuel)) {
                 return false;
             }
 
-            // Price filter
             if (currentFilters.minPrice && vehicle.price < parseInt(currentFilters.minPrice)) {
                 return false;
             }
@@ -356,19 +318,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Filter vehicles to only show saved ones
             const savedVehiclesList = vehicles.filter(v => savedCars.includes(v.id));
             renderVehicles(savedVehiclesList);
             updateStats(savedVehiclesList);
             
-            // Clear search and filters to show we're viewing saved cars
             searchInput.value = '';
             currentFilters.search = '';
 
             showingSaved = true;
             if (savedCard) savedCard.classList.add('active');
         } else {
-            // toggle back to full list
             renderVehicles(vehicles);
             updateStats(vehicles);
             showingSaved = false;
@@ -390,7 +349,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Wait for custom element to be defined before rendering
         customElements.whenDefined('vehicle-card').then(() => {
             vehiclesContainer.innerHTML = '';
             visibleVehicles.forEach(vehicle => {
@@ -406,7 +364,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     card.setAttribute('status', vehicle.status);
                 }
                 card.setAttribute('mode', 'renter');
-                // Pass the saved state to the vehicle card
                 card.setAttribute('saved', savedCars.includes(vehicle.id) ? 'true' : 'false');
                 
                 card.addEventListener('vehicle-click', (e) => {
@@ -418,7 +375,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ----- Renter rental history -----
     function loadRenterRentalHistory() {
         try {
             const raw = localStorage.getItem('rentalHistory');
@@ -428,7 +384,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Load renter profile into header and profile menu
     function loadRenterProfile() {
         try {
             const stored = localStorage.getItem('userProfile');
@@ -437,15 +392,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const name = `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Renter';
             const email = u.email || '';
 
-            // Update greeting
             const greetingEl = document.querySelector('.greeting');
             if (greetingEl) greetingEl.textContent = `Hello, ${name} 👋`;
 
-            // Update profile menu username attribute
             const pm = document.getElementById('profileMenu');
             if (pm) pm.setAttribute('username', name);
         } catch (e) {
-            // ignore
         }
     }
 
@@ -454,7 +406,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const emptyEl = document.getElementById('renter-rental-history-empty');
         if (!listEl) return;
 
-        // Determine current user identity from userProfile
         let currentUserName = '';
         let currentUserEmail = '';
         try {
@@ -465,16 +416,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentUserEmail = (u.email || '').trim();
             }
         } catch (e) {
-            // ignore
         }
 
         const all = Array.isArray(window._allRentalHistory) ? window._allRentalHistory : [];
         const filtered = all.filter(r => {
             if (!r) return false;
-            // match by renterName or renter email if stored
             if (currentUserName && r.renterName && r.renterName === currentUserName) return true;
             if (currentUserEmail && (r.renterEmail && r.renterEmail === currentUserEmail)) return true;
-            // fallback: if renterName is unknown, show nothing
             return false;
         });
 
@@ -538,7 +486,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (modal) modal.style.display = 'none';
     }
 
-    // Request return for an ongoing rental (called by renter)
     window.requestReturn = function(recordId) {
         try {
             const raw = localStorage.getItem('rentalHistory');
@@ -551,7 +498,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Get current renter info
             const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
             const renterName = `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim() || currentUserName || 'Unknown Renter';
             
@@ -561,7 +507,6 @@ document.addEventListener('DOMContentLoaded', function() {
             arr[idx] = rec;
             localStorage.setItem('rentalHistory', JSON.stringify(arr));
             
-            // Enhanced logging with category and severity
             try{ 
                 logAudit('requestReturn', `Return requested for "${rec.vehicleName}" by ${renterName}`, {
                     category: 'return_request',
@@ -569,7 +514,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }); 
             }catch(e){}
 
-            // mark vehicle as pending return in owner vehicles storage
             try {
                 const rawV = localStorage.getItem(VEHICLE_STORAGE_KEY);
                 const vArr = rawV ? JSON.parse(rawV) : [];
@@ -580,7 +524,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } catch (e) {}
 
-            // Refresh UI
             loadRenterRentalHistory();
             renderRenterHistoryForUser();
             alert('Return requested. The owner will be notified.');
@@ -589,7 +532,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // File a dispute on a rental record
     window.requestDispute = function(recordId) {
         const reason = prompt('Enter a brief reason for the dispute:');
         if (!reason) {
@@ -601,7 +543,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const idx = arr.findIndex(r => r.id === recordId);
             if (idx === -1) return;
             
-            // Get current renter info
             const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
             const renterName = `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim() || currentUserName || 'Unknown Renter';
             const renterEmail = userProfile.email || currentUserEmail || 'unknown@email.com';
@@ -618,7 +559,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             localStorage.setItem('rentalHistory', JSON.stringify(arr));
             
-            // Enhanced logging with metadata
             try{ 
                 logAudit('requestDispute', `Dispute filed for "${arr[idx].vehicleName}" - ${reason}`, {
                     category: 'dispute_management',
@@ -626,12 +566,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }); 
             }catch(e){}
 
-            // refresh UI
             loadRenterRentalHistory();
             renderRenterHistoryForUser();
             alert('Dispute submitted. Admin will review it.');
             
-            // log email to admin
             try {
                 const rec = arr[idx];
                 sendEmail('admin@carrental.local', 'New dispute filed', `Renter ${renterName} (${renterEmail}) filed a dispute for ${rec.vehicleName||'a vehicle'}: ${reason}`);
@@ -654,7 +592,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('savedVehicles').textContent = savedCars.length;
     }
 
-    // Global function for vehicle detail (called from onclick)
     window.showVehicleDetail = function(vehicleId) {
         const vehicle = vehicles.find(v => v.id === vehicleId);
         if (!vehicle) return;
@@ -745,7 +682,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         `;
 
-        // Add listeners for date calculation
         if (vehicle.available) {
             const startInput = document.getElementById('rent-start-date');
             const endInput = document.getElementById('rent-end-date');
@@ -784,12 +720,10 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.overflow = 'hidden';
     };
 
-    // Global function for renting vehicle
     window.rentVehicle = function(vehicleId) {
         const index = vehicles.findIndex(v => v.id === vehicleId);
         if (index === -1) return;
 
-        // Get dates
         const startInput = document.getElementById('rent-start-date');
         const endInput = document.getElementById('rent-end-date');
         
@@ -806,12 +740,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Calculate days and total
         let days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
         if (days < 1) days = 1;
         const totalPrice = days * (vehicles[index].price || 0);
 
-        // attach renter info from userProfile
         let renterName = '';
         let renterEmail = '';
         try {
@@ -835,7 +767,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         saveVehiclesToStorage(vehicles);
 
-        // create rental history record for this renter
         try {
             const raw = localStorage.getItem('rentalHistory');
             const arr = raw ? JSON.parse(raw) : [];
@@ -867,24 +798,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.saveCar = function(vehicleId) {
         if (savedCars.includes(vehicleId)) {
-            // Unsave the car
             savedCars = savedCars.filter(id => id !== vehicleId);
             saveSavedCars(savedCars);
             alert('Car removed from saved.');
         } else {
-            // Save the car
             savedCars = [...savedCars, vehicleId];
             saveSavedCars(savedCars);
             alert('Car saved successfully.');
         }
-        // Re-render vehicles to update the heart icons in real-time
         filterVehicles();
-        // Close detail modal and reopen with updated state
         closeDetailModal();
         showVehicleDetail(vehicleId);
     };
 
-    // Filter option click handlers
     document.querySelectorAll('.filter-option').forEach(option => {
         option.addEventListener('click', function() {
             this.classList.toggle('active');

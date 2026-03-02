@@ -1,4 +1,3 @@
-// confirm-modal.js - Reusable confirmation modal component
 class ConfirmModal extends HTMLElement {
     constructor() {
         super();

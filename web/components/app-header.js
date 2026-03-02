@@ -1,4 +1,3 @@
-// app-header.js - Reusable header component with logo, title, and subtitle
 class AppHeader extends HTMLElement {
     constructor() {
         super();

@@ -1,4 +1,3 @@
-// profile-menu.js - Reusable profile dropdown menu component
 class ProfileMenu extends HTMLElement {
     constructor() {
         super();
@@ -18,7 +17,6 @@ class ProfileMenu extends HTMLElement {
     }
 
     render() {
-        // Always read fresh data from localStorage
         let username = 'Guest';
         let userEmail = 'user@example.com';
         
@@ -30,7 +28,6 @@ class ProfileMenu extends HTMLElement {
                 userEmail = u.email || userEmail;
             }
         } catch (e) {
-            // ignore parse error
         }
 
         const userInitial = (username.charAt(0) || 'U').toUpperCase();
@@ -68,12 +65,7 @@ class ProfileMenu extends HTMLElement {
                     transform: scale(0.95);
                 }
 
-                /*
-                 * position: fixed — places the dropdown relative to the
-                 * viewport, so it always escapes any parent container's
-                 * overflow: hidden / overflow: clip clipping.
-                 * Exact top/right values are set at runtime in positionDropdown().
-                 */
+                
                 .dropdown-menu {
                     display: none;
                     position: fixed;
@@ -227,14 +219,12 @@ class ProfileMenu extends HTMLElement {
         const dropdown = this.shadowRoot.getElementById('dropdown');
         const links = this.shadowRoot.querySelectorAll('.dropdown-link');
 
-        // Position then toggle on each click
         profileBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             this.positionDropdown(dropdown, profileBtn);
             this.toggleMenu();
         });
 
-        // Handle menu item clicks
         links.forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -243,14 +233,12 @@ class ProfileMenu extends HTMLElement {
             });
         });
 
-        // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
             if (!this.contains(e.target)) {
                 this.closeMenu();
             }
         });
 
-        // Keep aligned on resize
         window.addEventListener('resize', () => {
             if (this.isOpen) {
                 this.positionDropdown(dropdown, profileBtn);
@@ -260,7 +248,6 @@ class ProfileMenu extends HTMLElement {
 
     positionDropdown(dropdown, button) {
         const rect = button.getBoundingClientRect();
-        // Align top just below the button; right-align to button's right edge
         dropdown.style.top   = `${rect.bottom + 10}px`;
         dropdown.style.right = `${window.innerWidth - rect.right}px`;
         dropdown.style.left  = 'auto';
@@ -287,19 +274,15 @@ class ProfileMenu extends HTMLElement {
     handleMenuAction(action) {
         switch(action) {
             case 'profile':
-                // Navigate to profile edit page
                 window.location.href = './profile.html';
                 break;
             case 'change-password':
-                // Navigate to change password page
                 window.location.href = './change-password.html';
                 break;
             case 'bookings':
-                // Navigate to bookings page
                 window.location.href = './bookings.html';
                 break;
             case 'logout':
-                // Handle logout
                 this.handleLogout();
                 break;
             default:
@@ -310,17 +293,14 @@ class ProfileMenu extends HTMLElement {
     }
 
     handleLogout() {
-        // Clear session data
         localStorage.removeItem('userProfile');
         localStorage.removeItem('authToken');
         
-        // Dispatch logout event
         this.dispatchEvent(new CustomEvent('logout', {
             bubbles: true,
             composed: true
         }));
 
-        // Redirect to login
         window.location.href = './login.html';
     }
 }

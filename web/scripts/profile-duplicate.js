@@ -1,4 +1,3 @@
-// profile.js - Profile edit functionality
 
 class ProfileManager {
     constructor() {
@@ -10,7 +9,6 @@ class ProfileManager {
         this.profilePicture = document.getElementById('profilePicture');
         this.pictureInput = document.getElementById('pictureInput');
 
-        // Form fields
         this.fields = {
             firstName: document.getElementById('firstName'),
             lastName: document.getElementById('lastName'),
@@ -20,7 +18,6 @@ class ProfileManager {
             email: document.getElementById('email')
         };
 
-        // Error messages
         this.errorElements = {
             firstName: document.getElementById('firstNameError'),
             lastName: document.getElementById('lastNameError'),
@@ -57,13 +54,10 @@ class ProfileManager {
         });
     }
 
-    // Helper to switch between Initials and Image
     updateProfileImageUI(imageSrc, firstName, lastName) {
         if (imageSrc) {
-            // Replace initials with an image tag
             this.profilePicture.innerHTML = `<img src="${imageSrc}" style="width:100%; height:100%; object-fit:cover; border-radius:50%; display:block;">`;
         } else {
-            // Fallback to initials logic
             const initials = (firstName?.charAt(0) || '') + (lastName?.charAt(0) || '');
             this.profilePicture.textContent = initials.toUpperCase() || '👤';
         }
@@ -80,7 +74,6 @@ class ProfileManager {
         this.fields.dateOfBirth.value = userData.dateOfBirth || '';
         this.fields.email.value = userData.email || '';
 
-        // Reflect existing data/image on load
         this.updateProfileImageUI(savedPicture, userData.firstName, userData.lastName);
         this.originalData = { ...userData };
     }
@@ -107,7 +100,6 @@ class ProfileManager {
         this.showSuccessMessage();
         this.originalData = { ...formData };
 
-        // Ensure UI reflects changes if user changed names but has no photo
         const savedPicture = localStorage.getItem('profilePicture');
         this.updateProfileImageUI(savedPicture, formData.firstName, formData.lastName);
     }
@@ -148,7 +140,6 @@ class ProfileManager {
         const updatedProfile = { ...currentProfile, ...data };
         localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
 
-        // Sync with main user list
         try {
             const users = JSON.parse(localStorage.getItem('carRentalUsers')) || [];
             const index = users.findIndex(u => u.id === currentProfile.id || u.email === currentProfile.email);
@@ -177,15 +168,12 @@ class ProfileManager {
             return;
         }
 
-        // FileReader to convert image to Base64 string
         const reader = new FileReader();
         reader.onload = (event) => {
             const imageSrc = event.target.result;
             
-            // 1. Persist to localStorage
             localStorage.setItem('profilePicture', imageSrc);
             
-            // 2. Reflect IMMEDIATELY in UI
             this.updateProfileImageUI(imageSrc, this.fields.firstName.value, this.fields.lastName.value);
         };
         reader.readAsDataURL(file);

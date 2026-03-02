@@ -1,4 +1,4 @@
-/* Auth Pages Styles */
+
 * {
     margin: 0;
     padding: 0;
@@ -222,7 +222,7 @@ body {
     margin: 3px 0;
 }
 
-/* Register Page Styles */
+
 .register-form-container {
     background: white;
     border-radius: 20px;
@@ -357,7 +357,7 @@ body {
     font-weight: 600;
 }
 
-/* Responsive Design */
+
 @media (max-width: 768px) {
     .header {
         padding: 40px 20px 20px;

@@ -173,7 +173,6 @@ document.addEventListener('DOMContentLoaded', function () {
             };
 
             saveUser(newUser);
-            // Store a lightweight user profile for other pages to read (do not include password)
             try {
                 const profile = {
                     id: newUser.id,
@@ -188,12 +187,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     createdAt: newUser.createdAt
                 };
                 localStorage.setItem('userProfile', JSON.stringify(profile));
-                // Optionally set a simple auth token
                 localStorage.setItem('authToken', String(newUser.id));
-                // Notify other parts of the app
                 window.dispatchEvent(new CustomEvent('profileUpdated', { detail: profile }));
             } catch (e) {
-                // ignore storage errors
             }
             setState({ loading: false });
 

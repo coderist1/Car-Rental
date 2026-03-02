@@ -1,14 +1,11 @@
-// admin-dashboard.js - minimal admin controls
 document.addEventListener('DOMContentLoaded', () => {
     loadAdminProfile();
     refreshAdminDashboard();
 
-    // Refresh when profile changes
     window.addEventListener('profileUpdated', () => {
         loadAdminProfile();
     });
 
-    // update audit panel when new entries are logged
     window.addEventListener('auditLogged', renderAudit);
 });
 
@@ -42,7 +39,6 @@ function getUsers() {
     } catch (e) { return []; }
 }
 
-// vehicles are still stored in ownerVehicles even though admin doesn't manage them directly
 function getAllVehicles() {
     try {
         const raw = localStorage.getItem('ownerVehicles');
@@ -70,7 +66,6 @@ function renderUsers(){
         if (u.role === 'owner') {
             actions += `<button class="btn btn-secondary" onclick="adminShowVehicles(${u.id})">Show Vehicles</button>`;
         }
-        // allow quick conversion to renter if not already
         if (u.role !== 'renter') {
             actions += `<button class="btn btn-outline" onclick="adminChangeRole(${u.id}, 'renter')">Make Renter</button>`;
         }
@@ -87,7 +82,6 @@ function renderUsers(){
         </div>`;
     }
 
-    // build separate panels
     let ownerHtml = '';
     if(owners.length>0){
         ownerHtml = '<div class="admin-subsection"><h3>Owners</h3>' + owners.map(userRow).join('') + '</div>';
@@ -97,7 +91,6 @@ function renderUsers(){
         userHtml = '<div class="admin-subsection"><h3>Users</h3>' + others.map(userRow).join('') + '</div>';
     }
 
-    // two distinct lists
     container.innerHTML = `
         <div class="admin-list owners-list">${ownerHtml}</div>
         <div class="admin-list users-list">${userHtml}</div>
@@ -157,7 +150,6 @@ window.adminChangeRole = function(userId, newRole) {
     } catch(e){ console.error(e); }
 }
 
-// show vehicles owned by a given user (matched by full name)
 window.adminShowVehicles = function(userId) {
     const users = getUsers();
     const user = users.find(u => u.id === userId);
@@ -177,7 +169,6 @@ window.adminShowVehicles = function(userId) {
     openOwnerVehiclesModal(name, owned);
 }
 
-// vehicle management for admin
 
 function getVehicles(){
     try{ const raw = localStorage.getItem('ownerVehicles'); return raw? JSON.parse(raw): []; }catch(e){return []}
@@ -309,7 +300,6 @@ window.adminResolveDispute = function(recordId) {
         const idx = rentals.findIndex(r=>r.id===recordId);
         if(idx===-1) return;
         
-        // Get current admin info
         const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
         const adminName = `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim() || 'Admin';
         
@@ -338,7 +328,6 @@ window.adminResolveDisputeWithNotes = function(recordId) {
         const idx = rentals.findIndex(r=>r.id===recordId);
         if(idx===-1) return;
         
-        // Get current admin info
         const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
         const adminName = `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim() || 'Admin';
         
@@ -385,20 +374,17 @@ function renderDisputes(){
     const rentals = getRentals();
     if(!container) return;
     
-    // Get filter values
     const statusFilter = document.getElementById('dispute-status-filter')?.value || 'all';
     const searchFilter = document.getElementById('dispute-search-filter')?.value || '';
     
     let disputes = rentals.filter(r=>r.dispute);
     
-    // Apply status filter
     if(statusFilter === 'open') {
         disputes = disputes.filter(r => !r.disputeResolved);
     } else if(statusFilter === 'resolved') {
         disputes = disputes.filter(r => r.disputeResolved);
     }
     
-    // Apply search filter
     if(searchFilter) {
         const search = searchFilter.toLowerCase();
         disputes = disputes.filter(r => 
@@ -408,7 +394,6 @@ function renderDisputes(){
         );
     }
     
-    // Sort by filed date (newest first)
     disputes.sort((a,b) => new Date(b.disputeFiledAt || b.createdAt) - new Date(a.disputeFiledAt || a.createdAt));
     
     let filterHTML = `
@@ -461,11 +446,9 @@ function renderAudit(){
     const logs = typeof getAuditLog === 'function' ? getAuditLog() : [];
     if(!container) return;
     
-    // Get filter values
     const categoryFilter = document.getElementById('audit-category-filter')?.value || 'all';
     const searchFilter = document.getElementById('audit-search-filter')?.value || '';
     
-    // Apply filters
     let filtered = logs;
     if(categoryFilter !== 'all') {
         filtered = logs.filter(l => l.category === categoryFilter);
@@ -479,7 +462,6 @@ function renderAudit(){
         );
     }
     
-    // Get stats
     const stats = typeof getAuditStats === 'function' ? getAuditStats() : {};
     
     let html = `
@@ -586,7 +568,6 @@ function renderAnalytics() {
     if (disputesEl) disputesEl.textContent = String(disputes);
 }
 
-// owner vehicles modal helpers
 function openOwnerVehiclesModal(ownerName, vehicles, opts = {}) {
     const modal = document.getElementById('owner-vehicles-modal');
     const nameEl = document.getElementById('modal-owner-name');
@@ -623,7 +604,6 @@ function closeOwnerVehiclesModal() {
     if (modal) modal.style.display = 'none';
 }
 
-// close modal when clicking outside
 window.addEventListener('click', (e) => {
     const modal = document.getElementById('owner-vehicles-modal');
     if (modal && e.target === modal) {
@@ -631,7 +611,6 @@ window.addEventListener('click', (e) => {
     }
 });
 
-// navigation helper (mirrors inline script)
 function navigateAdmin(e) {
     e.preventDefault();
     const target = e.currentTarget.getAttribute('data-target');
@@ -642,14 +621,12 @@ function navigateAdmin(e) {
         analyticsPanel.classList.toggle('active', target === 'analytics-panel');
     }
 
-    // hide all panels, then show only the selected one via active class
     document.querySelectorAll('.admin-panel').forEach(p => {
         p.classList.remove('active');
     });
     const el = document.getElementById(target);
     if (el && el.classList.contains('admin-panel')) {
         el.classList.add('active');
-        // scroll into view in case panels are long
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else if (target === 'analytics-panel' && analyticsPanel) {
         analyticsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -659,9 +636,7 @@ function navigateAdmin(e) {
     e.currentTarget.classList.add('active');
 }
 
-// ensure initial panel state on load
 window.addEventListener('DOMContentLoaded', () => {
-    // show only the first panel by default
     const first = document.querySelector('.sidebar-nav a');
     if (first) first.click();
 });

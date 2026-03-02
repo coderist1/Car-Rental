@@ -3,11 +3,15 @@
   "version": "1.0.0",
   "description": "Car Rental Web Application with Web Components",
   "scripts": {
-    "start": "cd web && python -m http.server 8000",
+    "start": "node server.js",
+    "dev": "node server.js",
     "deploy": "gh-pages -d web"
   },
   "devDependencies": {
     "gh-pages": "^5.0.0"
   },
-  "private": true
+  "private": true,
+  "dependencies": {
+    "express": "^5.2.1"
+  }
 }

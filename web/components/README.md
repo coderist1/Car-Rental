@@ -58,7 +58,6 @@ A reusable authentication form component for login/register pages.
 <script>
     document.querySelector('auth-form').addEventListener('auth-submit', (e) => {
         const { email, password } = e.detail;
-        // Handle authentication
     });
 </script>
 ```
@@ -107,9 +106,7 @@ A reusable vehicle card component for displaying vehicle information.
     document.querySelector('vehicle-card').addEventListener('vehicle-action', (e) => {
         const { action, vehicleId } = e.detail;
         if (action === 'edit') {
-            // Handle edit
         } else if (action === 'delete') {
-            // Handle delete
         }
     });
 </script>
@@ -158,10 +155,8 @@ A reusable confirmation modal component with Yes/No buttons.
         const confirmed = await modal.show('Are you sure you want to delete?');
         
         if (confirmed) {
-            // User clicked Yes
             console.log('Deleting...');
         } else {
-            // User clicked No
             console.log('Cancelled');
         }
     }

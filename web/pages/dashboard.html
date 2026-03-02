@@ -41,7 +41,7 @@
             </div>
         </section>
 
-        <!-- Car Details Modal -->
+        
         <div id="car-detail-modal" class="car-detail-modal modal">
             <div class="car-detail-modal-content">
                 <div class="car-detail-container">
@@ -110,9 +110,7 @@
         <section class="vehicles-grid" id="vehicles-grid"></section>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════
-         Add / Edit Vehicle Modal
-    ══════════════════════════════════════════════════════ -->
+    
     <div id="vehicle-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -232,9 +230,7 @@
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════
-         Rental History Modal
-    ══════════════════════════════════════════════════════ -->
+    
     <div id="rental-history-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -252,9 +248,7 @@
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════
-         DAMAGE REPORTS — List Modal
-    ══════════════════════════════════════════════════════ -->
+    
     <div id="dmg-list-modal" class="modal dmg-overlay">
         <div class="modal-content dmg-box dmg-box--list">
             <div class="modal-header dmg-header">
@@ -289,15 +283,12 @@
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════
-         DAMAGE REPORTS — New Report Form Modal
-         Used for both Check-in and linked Check-out
-    ══════════════════════════════════════════════════════ -->
+    
     <div id="dmg-form-modal" class="modal dmg-overlay">
         <div class="modal-content dmg-box dmg-box--form">
             <div class="modal-header dmg-header">
                 <div class="dmg-header-identity">
-                    <!-- emoji and title updated by JS -->
+                    
                     <span class="dmg-header-emoji" id="dmg-form-emoji">✅</span>
                     <div>
                         <h2 class="modal-title" id="dmg-form-title">New Check-in Report</h2>
@@ -308,10 +299,10 @@
             </div>
             <div class="modal-body dmg-body">
 
-                <!-- Green banner shown only when creating a linked check-out -->
+                
                 <div id="dmg-linked-banner" class="dmg-linked-banner"></div>
 
-                <!-- Row 1: vehicle + report type -->
+                
                 <div class="dmg-row-2">
                     <div class="dmg-field">
                         <label class="dmg-label">Vehicle <span class="required">*</span></label>
@@ -336,7 +327,7 @@
                     </div>
                 </div>
 
-                <!-- Row 2: renter + datetime -->
+                
                 <div class="dmg-row-2" style="margin-top:14px">
                     <div class="dmg-field">
                         <label class="dmg-label">Renter Name</label>
@@ -348,20 +339,20 @@
                     </div>
                 </div>
 
-                <!-- Condition checklist — rebuilt entirely by JS (renderDmgChecklist) -->
+                
                 <p class="dmg-section-title" style="margin-top:18px">⚠️ Condition Checklist</p>
                 <div class="dmg-checklist" id="dmg-checklist">
-                    <!-- JS fills this in, including default items + custom items + Add Other row -->
+                    
                 </div>
 
-                <!-- Notes -->
+                
                 <div class="dmg-field" style="margin-top:14px">
                     <label class="dmg-label">Notes / Description</label>
                     <textarea id="dmg-notes" class="form-input" rows="3"
                               placeholder="Fuel level, odometer reading, general condition…"></textarea>
                 </div>
 
-                <!-- Photo upload -->
+                
                 <div class="dmg-field" style="margin-top:14px">
                     <label class="dmg-label">Photos <small class="dmg-muted">(up to 6, max 5 MB each)</small></label>
                     <div class="dmg-dropzone" onclick="document.getElementById('dmg-photo-input').click()">
@@ -381,9 +372,7 @@
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════
-         DAMAGE REPORTS — View / Comparison Modal
-    ══════════════════════════════════════════════════════ -->
+    
     <div id="dmg-view-modal" class="modal dmg-overlay">
         <div class="modal-content dmg-box dmg-box--view">
             <div class="modal-header dmg-header">
@@ -397,16 +386,12 @@
                 <span class="close" onclick="closeDmgViewModal()">&times;</span>
             </div>
 
-            <!-- Body filled entirely by JS -->
+            
             <div class="modal-body dmg-body" id="dmg-view-body"></div>
 
             <div class="modal-footer dmg-footer">
                 <button class="btn btn-danger" id="dmg-view-delete">🗑 Delete</button>
-                <!--
-                    "Add Check-out" button.
-                    JS shows this ONLY when viewing a check-in that has no linked check-out yet.
-                    Clicking it opens the form in locked "checkout" mode.
-                -->
+                
                 <button class="btn" id="dmg-view-add-checkout" style="display:none">
                     🔁 Add Check-out
                 </button>

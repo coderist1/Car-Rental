@@ -1,10 +1,8 @@
-// admin-register.js - simple admin registration
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('admin-register-form');
     const errorDiv = document.getElementById('errorMessage');
     if (!form) return;
 
-    // Change this key to something secret in production
     const ADMIN_REG_KEY = 'ADMIN2026';
 
     form.addEventListener('submit', (e) => {
@@ -41,11 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // load existing users
         let users = [];
         try { users = JSON.parse(localStorage.getItem('carRentalUsers')) || []; } catch (e) { users = []; }
 
-        // basic duplicate email check
         if (users.some(u => (u.email||'').toLowerCase() === email)) {
             showError('An account with this email already exists');
             return;
@@ -67,7 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
         users.push(newUser);
         try { localStorage.setItem('carRentalUsers', JSON.stringify(users)); } catch (e) { console.error(e); }
 
-        // set lightweight userProfile for UI and auth
         const userProfile = {
             id,
             firstName,
@@ -78,11 +73,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try { localStorage.setItem('userProfile', JSON.stringify(userProfile)); } catch(e){}
         try { localStorage.setItem('authToken', 'token-' + id); } catch(e){}
 
-        // notify other components/pages
         try { window.dispatchEvent(new Event('profileUpdated')); } catch(e){}
 
         alert('Admin account created successfully!');
-        // redirect to admin dashboard
         window.location.href = 'admin-dashboard.html';
     });
 });

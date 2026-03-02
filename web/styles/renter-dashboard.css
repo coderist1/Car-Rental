@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap');
 
-/* Renter Dashboard Styles */
+
 * {
     margin: 0;
     padding: 0;
@@ -225,7 +225,7 @@ body {
     text-decoration: underline;
 }
 
-/* make the saved stat card look interactive */
+
 #savedCardContainer {
     cursor: pointer;
 }
@@ -394,7 +394,7 @@ vehicle-card {
     color: #666;
 }
 
-/* Modal Styles */
+
 .modal {
     display: none;
     position: fixed;
@@ -534,7 +534,7 @@ vehicle-card {
     background-color: #ff6a3d;
 }
 
-/* Detail Modal Styles */
+
 .detail-modal {
     display: none;
     position: fixed;
@@ -736,7 +736,7 @@ vehicle-card {
     margin-top: 20px;
 }
 
-/* Responsive Design */
+
 @media (max-width: 768px) {
     .header {
         flex-direction: column;
