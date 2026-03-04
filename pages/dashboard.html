@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Rental - Owner Dashboard</title>
+    <link rel="stylesheet" href="../styles/dashboard.css">
+    <link rel="stylesheet" href="../styles/damage-report.css">
+    <script type="module" src="../components/vehicle-card.js"></script>
+    <script type="module" src="../components/confirm-modal.js"></script>
+    <script type="module" src="../components/profile-menu.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>Owner Dashboard</h1>
+                <div class="user-info">
+                    <span id="owner-welcome">Welcome, John Doe</span>
+                    <profile-menu id="ownerProfile" username="John Doe"></profile-menu>
+                </div>
+            </div>
+        </header>
+
+        <section class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="total-vehicles">0</div>
+                <div class="stat-label">Total Vehicles</div>
+            </div>
+            <div class="stat-card clickable" id="availableCard">
+                <div class="stat-number" id="available-vehicles">0</div>
+                <div class="stat-label">Available</div>
+            </div>
+            <div class="stat-card clickable" id="rentedCard">
+                <div class="stat-number" id="rented-vehicles">0</div>
+                <div class="stat-label">Rented</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="estimated-earnings">₱0</div>
+                <div class="stat-label">Estimated Earnings / Day</div>
+            </div>
+        </section>
+
+        
+        <div id="car-detail-modal" class="car-detail-modal modal">
+            <div class="car-detail-modal-content">
+                <div class="car-detail-container">
+                    <section class="detail-panel">
+                        <header class="detail-header">
+                            <h2 id="modal-car-title">Car Model — Details</h2>
+                        </header>
+                        <form id="modal-car-form" class="car-form" autocomplete="off">
+                            <label>Make <span class="required">*</span>
+                                <input name="make" id="modal-make" type="text" />
+                            </label>
+                            <label>Model <span class="required">*</span>
+                                <input name="model" id="modal-model" type="text" />
+                            </label>
+                            <label>Year <span class="required">*</span>
+                                <input name="year" id="modal-year" type="number" min="1990" max="2026" />
+                            </label>
+                            <label>Price per day (₱) <span class="required">*</span>
+                                <input name="price" id="modal-price" type="number" step="0.01" />
+                            </label>
+                            <label>Availability
+                                <select id="modal-availability" name="availability">
+                                    <option value="available">Available</option>
+                                    <option value="rented">Rented</option>
+                                    <option value="maintenance">Maintenance</option>
+                                </select>
+                            </label>
+                            <label>Location
+                                <select id="modal-location" name="location">
+                                    <option value="Manila">Manila</option>
+                                    <option value="Quezon City">Quezon City</option>
+                                    <option value="Cebu City">Cebu City</option>
+                                    <option value="Davao City">Davao City</option>
+                                    <option value="Makati">Makati</option>
+                                    <option value="Taguig">Taguig</option>
+                                    <option value="Pasig">Pasig</option>
+                                    <option value="Parañaque">Parañaque</option>
+                                </select>
+                            </label>
+                            <label>Description
+                                <textarea id="modal-description" name="description" rows="3"></textarea>
+                            </label>
+                            <div class="form-note" id="modal-save-note" aria-live="polite"></div>
+                        </form>
+                    </section>
+                    <section class="image-panel">
+                        <img id="modal-car-image" src="../assets/car-placeholder.jpg" alt="Car image" />
+                    </section>
+                </div>
+                <button class="modal-close-x" onclick="closeCarDetailModal()">✕</button>
+            </div>
+        </div>
+
+        <section class="search-section">
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search your vehicles..." id="search-input">
+                <button class="btn btn-outline" onclick="openRentalHistoryModal()">Rental History</button>
+                <button class="btn btn-outline dmg-toolbar-btn" onclick="openDamageReportsListModal()" id="dmg-open-btn">
+                    Damage Reports
+                    <span class="dmg-badge-pill" id="dmg-badge-pill" style="display:none">0</span>
+                </button>
+                <button class="btn btn-primary" onclick="openAddModal()">+ Add Vehicle</button>
+            </div>
+        </section>
+
+        <section class="vehicles-grid" id="vehicles-grid"></section>
+    </div>
+
+    
+    <div id="vehicle-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">Add New Vehicle</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="vehicle-form">
+                    <div class="form-group">
+                        <label class="form-label" for="vehicle-name">Vehicle Name <span class="required">*</span></label>
+                        <input type="text" id="vehicle-name" class="form-input" placeholder="e.g. Civic, Vios, Fortuner" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="vehicle-brand">Brand <span class="required">*</span></label>
+                        <input type="text" id="vehicle-brand" class="form-input" placeholder="e.g. Toyota, Honda, Ford" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="vehicle-year">Year <span class="required">*</span></label>
+                            <input type="number" id="vehicle-year" class="form-input" value="2024" min="1990" max="2026" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="vehicle-price">Price/Day (₱) <span class="required">*</span></label>
+                            <input type="number" id="vehicle-price" class="form-input" placeholder="e.g. 2500" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="vehicle-availability">Status <span class="required">*</span></label>
+                            <select id="vehicle-availability" class="form-input" required>
+                                <option value="available">Available</option>
+                                <option value="rented">Rented</option>
+                                <option value="maintenance">Under Maintenance</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="vehicle-location">Location <span class="required">*</span></label>
+                        <select id="vehicle-location" class="form-input" required>
+                            <option value="">-- Select Location --</option>
+                            <option value="Manila">Manila</option>
+                            <option value="Quezon City">Quezon City</option>
+                            <option value="Cebu City">Cebu City</option>
+                            <option value="Davao City">Davao City</option>
+                            <option value="Makati">Makati</option>
+                            <option value="Taguig">Taguig</option>
+                            <option value="Pasig">Pasig</option>
+                            <option value="Parañaque">Parañaque</option>
+                            <option value="Caloocan">Caloocan</option>
+                            <option value="Antipolo">Antipolo</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="vehicle-seats">Seats <span class="required">*</span></label>
+                            <input type="number" id="vehicle-seats" class="form-input" value="5" min="1" max="15" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="vehicle-transmission">Transmission <span class="required">*</span></label>
+                            <select id="vehicle-transmission" class="form-input" required>
+                                <option value="">-- Select --</option>
+                                <option value="Automatic">Automatic</option>
+                                <option value="Manual">Manual</option>
+                                <option value="CVT">CVT</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="vehicle-type">Type <span class="required">*</span></label>
+                            <select id="vehicle-type" class="form-input" required>
+                                <option value="">-- Select Type --</option>
+                                <option value="Sedan">Sedan</option>
+                                <option value="SUV">SUV</option>
+                                <option value="Hatchback">Hatchback</option>
+                                <option value="Pickup">Pickup Truck</option>
+                                <option value="Van">Van / Minivan</option>
+                                <option value="MPV">MPV</option>
+                                <option value="Crossover">Crossover</option>
+                                <option value="Coupe">Coupe</option>
+                                <option value="Sports">Sports Car</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="vehicle-fuel">Fuel Type <span class="required">*</span></label>
+                            <select id="vehicle-fuel" class="form-input" required>
+                                <option value="">-- Select --</option>
+                                <option value="Gasoline">Gasoline</option>
+                                <option value="Diesel">Diesel</option>
+                                <option value="Hybrid">Hybrid</option>
+                                <option value="Electric">Electric</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="vehicle-plate">Plate Number <span class="required">*</span></label>
+                        <input type="text" id="vehicle-plate" class="form-input" placeholder="e.g. ABC 1234" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="vehicle-color">Color</label>
+                        <input type="text" id="vehicle-color" class="form-input" placeholder="e.g. White, Black, Silver">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="vehicle-description">Description</label>
+                        <textarea id="vehicle-description" class="form-input" rows="3" placeholder="Any additional details about the vehicle..."></textarea>
+                    </div>
+                </form>
+                <div class="form-group">
+                    <label class="form-label">Vehicle Image <span class="required">*</span></label>
+                    <input type="file" id="vehicle-image-input" accept="image/*" class="form-input">
+                    <div class="image-preview"><img id="vehicle-image-preview" src="../assets/car-placeholder.jpg" alt="Preview"></div>
+                </div>
+                <p class="required-note"><span class="required">*</span> Required fields</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveVehicle()">Save Vehicle</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="rental-history-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Rental History</h2>
+                <span class="close" onclick="closeRentalHistoryModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="rental-history-list"></div>
+                <p id="rental-history-empty" class="empty-state" style="display:none">No rental history yet.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeRentalHistoryModal()">Close</button>
+                <button type="button" class="btn btn-danger" onclick="clearRentalHistory()">Clear History</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="dmg-list-modal" class="modal dmg-overlay">
+        <div class="modal-content dmg-box dmg-box--list">
+            <div class="modal-header dmg-header">
+                <div class="dmg-header-identity">
+                    <span class="dmg-header-emoji">📋</span>
+                    <div>
+                        <h2 class="modal-title">Damage Reports</h2>
+                        <p class="dmg-header-sub">All check-in / check-out records</p>
+                    </div>
+                </div>
+                <span class="close" onclick="closeDamageReportsListModal()">&times;</span>
+            </div>
+            <div class="modal-body dmg-body">
+                <div class="dmg-list-controls">
+                    <input type="text" class="form-input dmg-list-search" id="dmg-list-search"
+                           placeholder="🔍  Search vehicle or renter…">
+                    <select class="form-input dmg-list-filter" id="dmg-list-filter">
+                        <option value="all">All types</option>
+                        <option value="checkin">Check-in only</option>
+                        <option value="checkout">Check-out only</option>
+                    </select>
+                </div>
+                <div id="dmg-list-items"></div>
+                <p id="dmg-list-empty" class="dmg-empty-msg" style="display:none">
+                    No damage reports yet. Click "+ New Check-in" to start.
+                </p>
+            </div>
+            <div class="modal-footer dmg-footer">
+                <button class="btn btn-secondary" onclick="closeDamageReportsListModal()">Close</button>
+                <button class="btn btn-primary" onclick="openNewReportFromList()">+ New Check-in</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="dmg-form-modal" class="modal dmg-overlay">
+        <div class="modal-content dmg-box dmg-box--form">
+            <div class="modal-header dmg-header">
+                <div class="dmg-header-identity">
+                    
+                    <span class="dmg-header-emoji" id="dmg-form-emoji">✅</span>
+                    <div>
+                        <h2 class="modal-title" id="dmg-form-title">New Check-in Report</h2>
+                        <p class="dmg-header-sub" id="dmg-form-subtitle">Document vehicle condition before the trip</p>
+                    </div>
+                </div>
+                <span class="close" onclick="closeDmgFormModal()">&times;</span>
+            </div>
+            <div class="modal-body dmg-body">
+
+                
+                <div id="dmg-linked-banner" class="dmg-linked-banner"></div>
+
+                
+                <div class="dmg-row-2">
+                    <div class="dmg-field">
+                        <label class="dmg-label">Vehicle <span class="required">*</span></label>
+                        <select id="dmg-vehicle" class="form-input dmg-select">
+                            <option value="">-- Select vehicle --</option>
+                        </select>
+                    </div>
+                    <div class="dmg-field">
+                        <label class="dmg-label">Report Type</label>
+                        <div class="dmg-type-row">
+                            <button type="button" class="dmg-type-btn active" data-type="checkin"
+                                    onclick="setDmgType('checkin', this)">
+                                ✅ Check-in
+                                <small>Before trip</small>
+                            </button>
+                            <button type="button" class="dmg-type-btn" data-type="checkout"
+                                    onclick="setDmgType('checkout', this)">
+                                🔁 Check-out
+                                <small>After trip</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="dmg-row-2" style="margin-top:14px">
+                    <div class="dmg-field">
+                        <label class="dmg-label">Renter Name</label>
+                        <input type="text" id="dmg-renter" class="form-input" placeholder="e.g. Juan dela Cruz">
+                    </div>
+                    <div class="dmg-field">
+                        <label class="dmg-label">Date &amp; Time</label>
+                        <input type="datetime-local" id="dmg-datetime" class="form-input">
+                    </div>
+                </div>
+
+                
+                <p class="dmg-section-title" style="margin-top:18px">⚠️ Condition Checklist</p>
+                <div class="dmg-checklist" id="dmg-checklist">
+                    
+                </div>
+
+                
+                <div class="dmg-field" style="margin-top:14px">
+                    <label class="dmg-label">Notes / Description</label>
+                    <textarea id="dmg-notes" class="form-input" rows="3"
+                              placeholder="Fuel level, odometer reading, general condition…"></textarea>
+                </div>
+
+                
+                <div class="dmg-field" style="margin-top:14px">
+                    <label class="dmg-label">Photos <small class="dmg-muted">(up to 6, max 5 MB each)</small></label>
+                    <div class="dmg-dropzone" onclick="document.getElementById('dmg-photo-input').click()">
+                        <span class="dmg-dropzone-icon">📷</span>
+                        <p class="dmg-dropzone-txt">Click to upload photos</p>
+                        <p class="dmg-dropzone-sub">JPG or PNG · max 5 MB each</p>
+                    </div>
+                    <input type="file" id="dmg-photo-input" accept="image/*" multiple style="display:none">
+                    <div class="dmg-photo-grid" id="dmg-photo-grid"></div>
+                </div>
+
+            </div>
+            <div class="modal-footer dmg-footer">
+                <button class="btn btn-secondary" onclick="closeDmgFormModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveDmgReport()">💾 Save Report</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="dmg-view-modal" class="modal dmg-overlay">
+        <div class="modal-content dmg-box dmg-box--view">
+            <div class="modal-header dmg-header">
+                <div class="dmg-header-identity">
+                    <span class="dmg-header-emoji" id="dmg-view-emoji">✅</span>
+                    <div>
+                        <h2 class="modal-title" id="dmg-view-title">Check-in Report</h2>
+                        <p class="dmg-header-sub" id="dmg-view-sub"></p>
+                    </div>
+                </div>
+                <span class="close" onclick="closeDmgViewModal()">&times;</span>
+            </div>
+
+            
+            <div class="modal-body dmg-body" id="dmg-view-body"></div>
+
+            <div class="modal-footer dmg-footer">
+                <button class="btn btn-danger" id="dmg-view-delete">🗑 Delete</button>
+                
+                <button class="btn" id="dmg-view-add-checkout" style="display:none">
+                    🔁 Add Check-out
+                </button>
+                <button class="btn btn-secondary" onclick="closeDmgViewModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/dashboard.js"></script>
+    <script src="../scripts/damage-report.js"></script>
+    <confirm-modal id="confirm-modal"></confirm-modal>
+</body>
+
+<footer>
+    <p>© 2025 Car Rental System. All rights Reserved.</p>
+</footer>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarRental - Admin Register</title>
+    <link rel="stylesheet" href="../styles/auth.css">
+    <link rel="stylesheet" href="../styles/register.css">
+</head>
+<body>
+    <div class="container">
+        <main class="form-container">
+            <div class="form-card">
+
+                <img 
+                    src="https://as2.ftcdn.net/v2/jpg/02/13/75/05/1000_F_213750591_6bVeg9sH1cD7wEvYhb2OUyHOesJzPtAL.jpg"
+                    class="login-logo"
+                    alt="CarRental Logo"
+                />
+
+                <h2 class="form-title">Create Admin Account</h2>
+                <p class="form-subtitle">Register as administrator</p>
+
+                <div class="error-text" id="errorMessage" style="display: none;"></div>
+
+                <form id="admin-register-form">
+
+                    <div class="section-label">Personal Information</div>
+
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label class="input-label">First Name <span class="required">*</span></label>
+                            <input type="text" id="firstName" class="input" placeholder="First Name" required />
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Last Name <span class="required">*</span></label>
+                            <input type="text" id="lastName" class="input" placeholder="Last Name" required />
+                        </div>
+                    </div>
+
+                    <div class="section-label">Account Information</div>
+
+                    <div class="input-group">
+                        <label class="input-label">Email <span class="required">*</span></label>
+                        <input type="email" id="email" class="input" placeholder="Email" required />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Password <span class="required">*</span></label>
+                        <input type="password" id="password" class="input" placeholder="Password (min. 6 characters)" required />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Admin Key <span class="required">*</span></label>
+                        <input type="password" id="adminKey" class="input" placeholder="Admin Key" required />
+                        <small style="color:#f97316;margin-top:4px;display:block;">Hint: ADMIN2026</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        Create Admin Account
+                    </button>
+                </form>
+
+                <p class="link-button">
+                    Regular registration?
+                    <a href="register.html" class="link-bold">Register as User</a>
+                </p>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="../scripts/admin-register.js" defer></script>
+</body>
+</html>

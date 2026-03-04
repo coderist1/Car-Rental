@@ -1,0 +1,150 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarRental - Renter Dashboard</title>
+    <link rel="stylesheet" href="../styles/renter-dashboard.css">
+    <script type="module" src="../components/vehicle-card.js"></script>
+    <script type="module" src="../components/profile-menu.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-info">
+                <h1 class="greeting">Hello, John Doe 👋</h1>
+                <p class="header-subtitle">Find your perfect ride</p>
+            </div>
+
+            
+            <div style="display:flex;align-items:center;gap:10px">
+                <button class="btn btn-outline" id="myRentalsBtn">My Rentals</button>
+                <profile-menu id="profileMenu" username="John Doe"></profile-menu>
+            </div>
+        </header>
+
+        <section class="search-section">
+            <div class="search-container">
+                <div class="search-input-container">
+                    <span class="search-icon">🔍</span>
+                    <input
+                        type="text"
+                        class="search-input"
+                        placeholder="Search cars..."
+                        id="searchInput"
+                    >
+                </div>
+                <button class="filter-button" id="filterButton">
+                    <span class="filter-icon">⚙️</span>
+                    <span class="filter-badge" style="display: none;">0</span>
+                </button>
+            </div>
+        </section>
+
+        <section class="stats-section">
+            <div class="stat-card">
+                <div class="stat-number" id="totalVehicles">0</div>
+                <div class="stat-label">Total Cars</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="availableVehicles">0</div>
+                <div class="stat-label">Available</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avgPrice">$0</div>
+                <div class="stat-label">Avg Price</div>
+            </div>
+            <div class="stat-card clickable" id="savedCardContainer">
+                <div class="stat-number" id="savedVehicles">0</div>
+                <div class="stat-label">Saved</div>
+            </div>
+        </section>
+
+        <section class="vehicles-section" id="vehiclesContainer">
+            
+        </section>
+    </div>
+
+    
+    <div id="filterModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Filters</h2>
+                <button class="close-button" id="closeFilter">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="filter-group">
+                    <label class="filter-label">Vehicle Type</label>
+                    <div class="filter-options">
+                        <button class="filter-option" data-filter="type">SUV</button>
+                        <button class="filter-option" data-filter="type">Sedan</button>
+                        <button class="filter-option" data-filter="type">Sports</button>
+                        <button class="filter-option" data-filter="type">Hybrid</button>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Transmission</label>
+                    <div class="filter-options">
+                        <button class="filter-option" data-filter="transmission">Automatic</button>
+                        <button class="filter-option" data-filter="transmission">Manual</button>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Fuel Type</label>
+                    <div class="filter-options">
+                        <button class="filter-option" data-filter="fuel">Petrol</button>
+                        <button class="filter-option" data-filter="fuel">Diesel</button>
+                        <button class="filter-option" data-filter="fuel">Hybrid</button>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Price Range (per day, ₱)</label>
+                    <div class="price-input-container">
+                        <input type="number" class="price-input" placeholder="Min" id="minPrice">
+                        <span class="price-separator">to</span>
+                        <input type="number" class="price-input" placeholder="Max" id="maxPrice">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="clearFilters">Reset</button>
+                <button class="btn btn-primary" id="applyFilters">Apply Filters</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="detailModal" class="detail-modal">
+        <div class="detail-modal-content">
+            <span class="close-detail" id="closeDetail">✕</span>
+            <div class="detail-content" id="detailContent">
+                
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="renter-rental-history-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">My Rentals</h2>
+                <button class="close-button" id="closeRenterHistory">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="renter-rental-history-list"></div>
+                <p id="renter-rental-history-empty" class="empty-state" style="display:none">You have no rentals yet.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="closeRenterHistoryFooter">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/renter-dashboard.js"></script>
+</body>
+</html>
