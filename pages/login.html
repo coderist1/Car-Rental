@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarRental - Login</title>
+    <link rel="stylesheet" href="../styles/auth.css">
+    <script type="module" src="../components/auth-form.js"></script>
+</head>
+<body>
+    <div class="container">
+        <main class="form-container">
+            <auth-form 
+                img-src="https://as2.ftcdn.net/v2/jpg/02/13/75/05/1000_F_213750591_6bVeg9sH1cD7wEvYhb2OUyHOesJzPtAL.jpg"
+                type="login"
+                title="Welcome Back"
+                subtitle="Sign in to your account">
+
+                <p slot="footer" style="
+                    text-align: center;
+                    margin-top: 16px;
+                    font-size: 14px;
+                    color: #6b7280;
+                ">
+                    Don't have an account?
+                    <a href="register.html" class="link-bold" style="
+                        color: #3F9B84;
+                        font-weight: 600;
+                        text-decoration: none;
+                    ">Register</a>
+                </p>
+
+                <p slot="footer" style="text-align:center;margin-top:8px;">
+                    <a href="admin-register.html" class="link-bold" style="color:#F97316;font-weight:600;text-decoration:none;">Register as Admin</a>
+                </p>
+
+            </auth-form>
+        </main>
+    </div>
+
+    <script type="module">
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        // ensure admin user exists, useful when someone goes straight to login
+        function ensureDefaultAdmin() {
+            let users = [];
+            try { users = JSON.parse(localStorage.getItem('carRentalUsers')) || []; } catch(e){ users = []; }
+            if (!users.some(u => u.role === 'admin')) {
+                const id = Date.now();
+                users.push({
+                    id,
+                    firstName: 'Admin',
+                    lastName: 'User',
+                    fullName: 'Admin User',
+                    email: 'admin@rentacar.com',
+                    password: 'admin123',
+                    role: 'admin',
+                    active: true,
+                    createdAt: new Date().toISOString()
+                });
+                try { localStorage.setItem('carRentalUsers', JSON.stringify(users)); } catch(e){}
+                console.log('Default admin seeded via login page');
+            }
+        }
+        ensureDefaultAdmin();
+
+        function saveUserProfile(user) {
+            try {
+                const profile = {
+                    id: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    middleName: user.middleName,
+                    fullName: user.fullName || `${user.firstName} ${user.lastName}`.trim(),
+                    email: user.email,
+                    role: user.role,
+                    sex: user.sex,
+                    dateOfBirth: user.dateOfBirth
+                };
+                localStorage.setItem('userProfile', JSON.stringify(profile));
+                localStorage.setItem('authToken', String(user.id));
+                window.dispatchEvent(new CustomEvent('profileUpdated', { detail: profile }));
+            } catch (e) {
+                console.error('Error saving profile:', e);
+            }
+        }
+
+        function getRegisteredUsers() {
+            const raw = localStorage.getItem('carRentalUsers');
+            if (!raw) return [];
+            try {
+                return JSON.parse(raw);
+            } catch {
+                return [];
+            }
+        }
+
+        document.querySelector('auth-form').addEventListener('auth-submit', function(e) {
+            const { email, password } = e.detail;
+
+            const registeredUsers = getRegisteredUsers();
+            const matchedUser = registeredUsers.find(
+                u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+            );
+
+            if (matchedUser) {
+                saveUserProfile(matchedUser);
+                if (matchedUser.role === 'owner') {
+                    navigateTo('dashboard.html');
+                } else if (matchedUser.role === 'admin') {
+                    navigateTo('admin-dashboard.html');
+                } else {
+                    navigateTo('renter-dashboard.html');
+                }
+                return;
+            }
+
+            if (email === 'owner@test.com' && password === 'password') {
+                saveUserProfile({
+                    id: 'demo-owner-1',
+                    firstName: 'John',
+                    lastName: 'Doe',
+                    email: 'owner@test.com',
+                    role: 'owner',
+                    fullName: 'John Doe'
+                });
+                navigateTo('dashboard.html');
+                return;
+            }
+
+            if (email === 'renter@test.com' && password === 'password') {
+                saveUserProfile({
+                    id: 'demo-renter-1',
+                    firstName: 'Jane',
+                    lastName: 'Smith',
+                    email: 'renter@test.com',
+                    role: 'renter',
+                    fullName: 'Jane Smith'
+                });
+                navigateTo('renter-dashboard.html');
+                return;
+            }
+
+            if (email === 'admin@test.com' && password === 'admin123') {
+                saveUserProfile({
+                    id: 'demo-admin-1',
+                    firstName: 'Admin',
+                    lastName: 'User',
+                    email: 'admin@test.com',
+                    role: 'admin',
+                    fullName: 'Admin User'
+                });
+                navigateTo('admin-dashboard.html');
+                return;
+            }
+
+            e.target.showError('Invalid credentials. Please try again.');
+        });
+    </script>
+</body>
+</html>
