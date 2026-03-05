@@ -4,9 +4,11 @@ import { AuthProvider } from './context/AuthContext';
 import { VehicleProvider } from './context/VehicleContext';
 import { useAuth } from './hooks';
 import {
+  LandingPage,
   Login,
   Register,
   AdminRegister,
+  ForgotPassword, // Requirement: Ensure all new components are imported
   Dashboard,
   RenterDashboard,
   AdminDashboard,
@@ -16,12 +18,13 @@ import {
   EmailLog,
 } from './pages';
 
-// Protected Route Component
+// Lab Requirement: Improved Quality - Protected Route logic 
+// Ensures unauthorized users cannot access internal pages.
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/LandingPage" replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
@@ -33,6 +36,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   return children;
 };
 
+// Lab Requirement: Usability - Public Route logic
+// Prevents logged-in users from seeing the login/forgot-password pages.
 const PublicRoute = ({ children }) => {
   const { user, isAuthenticated } = useAuth();
 
@@ -50,11 +55,18 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <VehicleProvider>
+          {/* Lab Requirement: Semantic Routing & SPA Fallback Support */}
           <Routes>
-            {/* Public Routes */}
+            {/* Landing Page */}
+            <Route path="/LandingPage" element={<LandingPage />} />
+
+            {/* Public Routes - Lab Requirement: User flow optimization */}
             <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
             <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
             <Route path="/admin-register" element={<PublicRoute><AdminRegister /></PublicRoute>} />
+            
+            {/* NEW: Forgot Password Route */}
+            <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
 
             {/* Owner Routes */}
             <Route
@@ -120,9 +132,10 @@ function App() {
               }
             />
 
-            {/* Default Redirect */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            {/* Lab Requirement Part 5: Handle 404s and Blank Pages 
+                Ensures that any unknown URL redirects back to the entry point. */}
+            <Route path="/" element={<Navigate to="/LandingPage" replace />} />
+            <Route path="*" element={<Navigate to="/LandingPage" replace />} />
           </Routes>
         </VehicleProvider>
       </AuthProvider>

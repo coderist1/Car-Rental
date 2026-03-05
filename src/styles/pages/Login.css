@@ -1,0 +1,74 @@
+/* Login.css */
+
+/* Visual Clarity & Spacing [cite: 80, 81] */
+.auth-container {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Color Contrast & Theme [cite: 79] */
+.login-theme-panel {
+    background: linear-gradient(135deg, #3F9B84 0%, #2d7a67 100%) !important;
+    color: white !important;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.login-theme-panel .auth-title, 
+.login-theme-panel .auth-subtitle {
+    color: white !important;
+}
+
+.login-theme-panel .auth-logo-box {
+    background: white !important;
+    width: fit-content;
+    padding: 10px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.login-theme-panel .auth-logo-svg {
+    color: #3F9B84 !important; 
+}
+
+/* Form Styling */
+.login-form-wrapper {
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+/* Accessible Input Focus [cite: 5] */
+.input:focus {
+    outline: 2px solid #3F9B84;
+    border-color: transparent;
+}
+
+/* Mobile Responsiveness [cite: 13] */
+@media (max-width: 860px) {
+    .register-split-container {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .login-theme-panel {
+        padding: 30px;
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .login-form-wrapper {
+        max-width: 100%;
+        padding: 20px;
+    }
+}

@@ -1,0 +1,76 @@
+
+/* The main container holding both sides */
+.register-split-container {
+  display: flex;
+  width: 100%;
+  max-width: 950px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  min-height: 600px;
+}
+
+/* Left pane for branding and role selection */
+.register-left-panel {
+  flex: 0 0 380px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: 1px solid #e2e8f0;
+}
+
+/* Right pane for the form inputs */
+.register-right-panel {
+  flex: 1;
+  padding: 40px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: white;
+}
+
+/* Specific stacking for role buttons in the left pane */
+.register-role-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Grid layout for the registration form */
+.register-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+  align-items: start;
+}
+
+/* Utility to make a specific input stretch across both columns */
+.register-form-grid .span-full {
+  grid-column: 1 / -1;
+}
+
+/* Responsive adjustments for Mobile/Tablets */
+@media (max-width: 860px) {
+  .register-split-container {
+    flex-direction: column;
+    max-width: 480px;
+  }
+  
+  .register-left-panel {
+    flex: auto;
+    padding: 32px;
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .register-right-panel {
+    padding: 32px;
+  }
+
+  .register-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
